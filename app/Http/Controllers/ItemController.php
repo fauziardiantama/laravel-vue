@@ -31,8 +31,8 @@ class ItemController extends Controller
     public function store(StoreItemRequest $request)
     {
         $item = new Item();
-        $item->name = $request->item->name;
-        $item->description = $request->item->description;
+        $item->name = $request->item['name'];
+        $item->description = $request->item['description'];
         $item->save();
         if ($item->save()) {
             return response()->json([
@@ -67,8 +67,8 @@ class ItemController extends Controller
     public function update(UpdateItemRequest $request, Item $item)
     {
         if ($item) {
-            $item->name = $request->item->name;
-            $item->description = $request->item->description;
+            $item->name = $request->item['name'];
+            $item->description = $request->item['description'];
             $item->save();
             if ($item->save()) {
                 return response()->json([
