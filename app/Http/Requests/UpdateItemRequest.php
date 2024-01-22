@@ -22,8 +22,8 @@ class UpdateItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'string',
-            'description' => 'string'
+            'item.name' => 'string',
+            'item.description' => 'string'
         ];
     }
 }

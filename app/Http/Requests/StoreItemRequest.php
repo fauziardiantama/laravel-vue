@@ -22,8 +22,8 @@ class StoreItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string',
-            'description' => 'required|string'
+            'item.name' => 'required|string',
+            'item.description' => 'required|string'
         ];
     }
 }
