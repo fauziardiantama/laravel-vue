@@ -48,8 +48,9 @@ class ItemController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(Item $item)
+    public function show($id)
     {
+        $item = Item::find($id);
         if ($item) {
             return response()->json([
                 'message' => 'Successfully retrieved item',
@@ -64,11 +65,12 @@ class ItemController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateItemRequest $request, Item $item)
+    public function update(UpdateItemRequest $request, $id)
     {
+        $item = Item::find($id);
         if ($item) {
-            $item->name = $request->item['name'];
-            $item->description = $request->item['description'];
+            $item->name = $request->item['name'] ?? $item->name;
+            $item->description = $request->item['description'] ?? $item->description;
             $item->save();
             if ($item->save()) {
                 return response()->json([
@@ -88,10 +90,10 @@ class ItemController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Item $item)
+    public function destroy($id)
     {
+        $item = Item::find($id);
         if ($item) {
-            $item->delete();
             if ($item->delete()) {
                 return response()->json([
                     'message' => 'Successfully deleted item'
