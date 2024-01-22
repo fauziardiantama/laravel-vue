@@ -1,7 +1,6 @@
 import { defineConfig } from 'vite';
 import laravel from 'laravel-vite-plugin';
 import vue from '@vitejs/plugin-vue';
-import vueRouter from '@vitejs/plugin-vue-router';
 
 export default defineConfig({
     plugins: [
@@ -20,12 +19,10 @@ export default defineConfig({
                 },
             },
         }),
-        vueRouter(),
     ],
     resolve: {
         alias: {
             vue: 'vue/dist/vue.esm-bundler.js',
-            vue_router: 'vue-router/dist/vue-router.esm-bundler.js',
         },
     },
 });
