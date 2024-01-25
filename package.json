@@ -6,17 +6,31 @@
         "build": "vite build"
     },
     "devDependencies": {
-        "@popperjs/core": "^2.11.6",
+        "@popperjs/core": "^2.11.8",
         "@vitejs/plugin-vue": "^4.5.0",
         "axios": "^1.6.5",
-        "bootstrap": "^5.2.3",
+        "bootstrap": "^5.3.2",
+        "bootstrap-vue-next": "^0.15.5",
         "laravel-vite-plugin": "^1.0.0",
-        "sass": "^1.56.1",
+        "sass": "^1.70.0",
+        "sass-loader": "^14.0.0",
         "vite": "^5.0.0",
         "vue": "^3.2.37"
     },
     "dependencies": {
+        "@coreui/chartjs": "^3.1.2",
+        "@coreui/coreui": "^4.3.2",
+        "@coreui/icons": "^3.0.1",
+        "@coreui/icons-vue": "^2.0.0",
+        "@coreui/utils": "^2.0.2",
+        "@coreui/vue": "^4.10.2",
+        "@coreui/vue-chartjs": "^2.2.0",
         "@vitejs/plugin-vue": "^5.0.3",
-        "vue-router": "^4.2.5"
+        "core-js": "^3.35.1",
+        "coreui": "^0.4.2-alpha2",
+        "laravel-echo": "^1.15.3",
+        "pusher-js": "^8.4.0-rc2",
+        "vue-router": "^4.2.5",
+        "vuex": "^4.1.0"
     }
 }

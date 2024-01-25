@@ -7,7 +7,6 @@
 import './bootstrap';
 import { createApp } from 'vue';
 
-
 /**
  * Next, we will create a fresh Vue application instance. You may then begin
  * registering components with the application instance so they are ready
@@ -17,11 +16,23 @@ import { createApp } from 'vue';
 const app = createApp({});
 
 import router from './router/index';
+import store from './store/index';
+import CoreuiVue from '@coreui/vue';
+import CIcon from '@coreui/icons-vue';
+import { iconsSet as icons } from '@/assets/icons';
+import DocsExample from '@/components/DocsExample.vue';
 
+app.use(store);
 app.use(router);
+app.use(CoreuiVue);
+app.provide('icons', icons);
+app.component('CIcon', CIcon);
+app.component('DocsExample', DocsExample);
 
-import ExampleComponent from './components/ExampleComponent.vue';
-app.component('example-component', ExampleComponent);
+import "bootstrap/dist/css/bootstrap.min.css"
+import "bootstrap"
+// import ExampleComponent from './components/ExampleComponent.vue';
+// app.component('example-component', ExampleComponent);
 
 /**
  * The following block of code may be used to automatically register your

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Item;
 use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
+use App\Events\ItemAdded;
 
 class ItemController extends Controller
 {
@@ -35,6 +36,7 @@ class ItemController extends Controller
         $item->description = $request->item['description'];
         $item->save();
         if ($item->save()) {
+            event(new ItemAdded());
             return response()->json([
                 'message' => 'Successfully created item',
                 'data' => $item
