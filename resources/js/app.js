@@ -6,15 +6,6 @@
 
 import './bootstrap';
 import { createApp } from 'vue';
-
-/**
- * Next, we will create a fresh Vue application instance. You may then begin
- * registering components with the application instance so they are ready
- * to use in your application's views. An example is included for you.
- */
-
-const app = createApp({});
-
 import router from './router/index';
 import store from './store/index';
 import CoreuiVue from '@coreui/vue';
@@ -22,15 +13,24 @@ import CIcon from '@coreui/icons-vue';
 import { iconsSet as icons } from '@/assets/icons';
 import DocsExample from '@/components/DocsExample.vue';
 
+import "bootstrap/dist/css/bootstrap.min.css";
+import "bootstrap";
+
+const app = createApp({});
+//tambah store (vuex?)
 app.use(store);
+//tambah router
 app.use(router);
+//tambah coreui
 app.use(CoreuiVue);
+//tambah icons dari folder assets
 app.provide('icons', icons);
+//tambah CIcon ??
 app.component('CIcon', CIcon);
+//tambah DocsExample dari folder components untuk ??
 app.component('DocsExample', DocsExample);
 
-import "bootstrap/dist/css/bootstrap.min.css"
-import "bootstrap"
+
 // import ExampleComponent from './components/ExampleComponent.vue';
 // app.component('example-component', ExampleComponent);
 

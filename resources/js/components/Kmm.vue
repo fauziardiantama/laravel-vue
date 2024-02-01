@@ -11,26 +11,30 @@
         <AppFooter />
       </div>
     </div>
-  </template>
+</template>
 
 <style type="scss">
-@import '../styles/style.scss';
+  @import '../styles/style.scss';
 </style>
 
-  <script>
+
+<script>
   import { CContainer } from '@coreui/vue'
   import AppFooter from '@/components/AppFooter.vue'
   import AppHeader from '@/components/AppHeader.vue'
   import AppSidebar from '@/components/AppSidebar.vue'
   
   export default {
-    name: 'DefaultLayout',
+    name: 'Kmm',
     components: {
       AppFooter,
       AppHeader,
       AppSidebar,
       CContainer,
     },
+    mounted() {
+      console.log('KMM Component mounted.')
+    },
   }
-  </script>
+</script>
   

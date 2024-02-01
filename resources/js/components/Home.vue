@@ -80,7 +80,21 @@
                     .catch(error => {
                         console.log(error);
                     });
-            }
+            },
+            edit() {
+                console.log('edit');
+                Swal.fire({
+                    toast: true,
+                    position: "top-end",
+                    showConfirmButton: false,
+                    timer: 3000,
+                    icon: "success",
+                    title: "Signed in successfully"
+                });
+            },
+            delet() {
+                console.log('delete');
+            },
         }
     }
 </script>

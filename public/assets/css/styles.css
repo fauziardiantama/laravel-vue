@@ -55,6 +55,10 @@ h6 {
 	line-height: 1.375rem;
 }
 
+.z-top {
+	z-index: 1 !important;
+}
+
 .p-large {
 	font-size: 1.125rem;
 	line-height: 1.75rem;
@@ -829,7 +833,7 @@ a:hover {
 /******************/
 .footer {
 	position: relative;
-	padding-top: 7.5rem;
+	/* padding-top: 7.5rem; */
 	padding-bottom: 6rem;
 	text-align: center;
 }

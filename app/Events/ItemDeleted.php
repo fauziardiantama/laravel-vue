@@ -11,16 +11,17 @@ use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 use App\Models\Item;
 
-class ItemAdded implements ShouldBroadcast
+class ItemDeleted implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
-    public $item;
+    public $id;
     /**
      * Create a new event instance.
      */
-    public function __construct($item)
+    public function __construct($id)
     {
-        $this->item = $item;
+        //change string id to int
+        $this->id = (int) $id;
     }
 
     /**
@@ -36,7 +37,7 @@ class ItemAdded implements ShouldBroadcast
     public function broadcastWith()
     {
         return [
-            'item' => $this->item
+            'id' => $this->id
         ];
     }
 }

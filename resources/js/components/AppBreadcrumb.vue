@@ -41,6 +41,6 @@ export default {
     return {
       breadcrumbs,
     }
-  },
+  }
 }
 </script>

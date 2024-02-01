@@ -6,6 +6,8 @@ use App\Models\Item;
 use App\Http\Requests\StoreItemRequest;
 use App\Http\Requests\UpdateItemRequest;
 use App\Events\ItemAdded;
+use App\Events\ItemUpdated;
+use App\Events\ItemDeleted;
 
 class ItemController extends Controller
 {
@@ -36,7 +38,7 @@ class ItemController extends Controller
         $item->description = $request->item['description'];
         $item->save();
         if ($item->save()) {
-            event(new ItemAdded());
+            event(new ItemAdded($item));
             return response()->json([
                 'message' => 'Successfully created item',
                 'data' => $item
@@ -75,6 +77,7 @@ class ItemController extends Controller
             $item->description = $request->item['description'] ?? $item->description;
             $item->save();
             if ($item->save()) {
+                event(new ItemUpdated($item));
                 return response()->json([
                     'message' => 'Successfully updated item',
                     'data' => $item
@@ -97,6 +100,7 @@ class ItemController extends Controller
         $item = Item::find($id);
         if ($item) {
             if ($item->delete()) {
+                event(new ItemDeleted($id));
                 return response()->json([
                     'message' => 'Successfully deleted item'
                 ], 200);
