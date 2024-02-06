@@ -127,10 +127,10 @@
 </template>
 
 <style scoped>
-@import url('http://127.0.0.1:8000/assets/css/bootstrap.min.css');
-@import url('http://127.0.0.1:8000/assets/css/fontawesome-all.min.css');
-@import url('http://127.0.0.1:8000/assets/css/swiper.min.css');
-@import url('http://127.0.0.1:8000/assets/css/styles.css');
+@import 'public/assets/css/bootstrap.min.css';
+@import 'public/assets/css/fontawesome-all.min.css';
+@import 'public/assets/css/swiper.css';
+@import 'public/assets/css/styles.css';
 
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;

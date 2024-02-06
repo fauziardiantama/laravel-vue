@@ -40,6 +40,30 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'smahasiswa' => [
+            'driver' => 'session',
+            'provider' => 'mahasiswa',
+        ],
+        'sdosen' => [
+            'driver' => 'session',
+            'provider' => 'dosen',
+        ],
+        'sadmin' => [
+            'driver' => 'session',
+            'provider' => 'admin',
+        ],
+        'mahasiswa' => [
+            'driver' => 'passport',
+            'provider' => 'auth',
+        ],
+        'dosen' => [
+            'driver' => 'passport',
+            'provider' => 'dosen',
+        ],
+        'admin' => [
+            'driver' => 'passport',
+            'provider' => 'admin',
+        ],
     ],
 
     /*
@@ -63,6 +87,25 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
+        ],
+
+        'mahasiswa' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Mahasiswa::class,
+        ],
+
+        'dosen' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Dosen::class,
+        ],
+
+        'admin' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Admin::class,
+        ],
+        'auth' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\AuthMahasiswa::class,
         ],
 
         // 'users' => [
@@ -93,6 +136,24 @@ return [
     'passwords' => [
         'users' => [
             'provider' => 'users',
+            'table' => 'password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+        'mahasiswa' => [
+            'provider' => 'mahasiswa',
+            'table' => 'password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+        'dosen' => [
+            'provider' => 'dosen',
+            'table' => 'password_reset_tokens',
+            'expire' => 60,
+            'throttle' => 60,
+        ],
+        'admin' => [
+            'provider' => 'admin',
             'table' => 'password_reset_tokens',
             'expire' => 60,
             'throttle' => 60,

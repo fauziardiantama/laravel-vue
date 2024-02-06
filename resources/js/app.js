@@ -5,6 +5,7 @@
  */
 
 import './bootstrap';
+import '../sass/app.scss'; 
 import { createApp } from 'vue';
 import router from './router/index';
 import store from './store/index';
@@ -18,9 +19,9 @@ import "bootstrap";
 
 const app = createApp({});
 //tambah store (vuex?)
-app.use(store);
 //tambah router
 app.use(router);
+app.use(store);
 //tambah coreui
 app.use(CoreuiVue);
 //tambah icons dari folder assets

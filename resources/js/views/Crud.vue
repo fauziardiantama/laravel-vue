@@ -110,13 +110,14 @@ export default {
         description: ''
       },
       itemstatus: 'Mengambil items',
-      showEditModal: false
+      showEditModal: false,
+      app: 'https://newkmmd3ti.vokasi.uns.ac.id/'
     }
   },
   async created() {
     //like constructor
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/items');
+      const response = await axios.get(`${this.app}api/items`);
       this.items = response.data.data;
     } catch (e) {
       if (e.response.status === 404) {
@@ -144,7 +145,7 @@ export default {
   methods: {
     addItem() {
       this.showLoadingAlert();
-      axios.post('http://127.0.0.1:8000/api/items', {
+      axios.post(`${this.app}api/items`, {
         item : this.createItem
       })
       .then(response => {
@@ -186,7 +187,7 @@ export default {
       //get item's id which have same id with activeItem id
       const itemId = this.items.find(i => i.id === this.activeItem.id).id;
 
-      axios.put(`http://127.0.0.1:8000/api/items/${itemId}`, {
+      axios.put(`${this.app}api/items/${itemId}`, {
           item : this.activeItem
       })
         .then(response => {
@@ -208,7 +209,7 @@ export default {
       this.showLoadingAlert();
       const itemId = this.items.find(i => i.id === item.id).id;
       
-      axios.delete(`http://127.0.0.1:8000/api/items/${itemId}`)
+      axios.delete(`${this.app}api/items/${itemId}`)
         .then(response => {
           console.log('berhasil delete', response.data.data);
           this.showSuccessAlert('Item Deleted successfully!');

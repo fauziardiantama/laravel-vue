@@ -13,7 +13,7 @@
       <CDropdownItem>
         <CIcon icon="cil-shield-alt" /> Change Password
       </CDropdownItem>
-      <CDropdownItem> <CIcon icon="cil-lock-locked" /> Logout </CDropdownItem>
+      <CDropdownItem @click="logout"> <CIcon icon="cil-lock-locked" /> Logout </CDropdownItem>
     </CDropdownMenu>
   </CDropdown>
 </template>
@@ -27,6 +27,13 @@ export default {
       avatar: avatar,
       itemsCount: 42,
     }
+  },
+  methods: {
+    logout() {
+      this.$store.dispatch('logout', {
+        router: () => this.$router.push({ name: 'Landing' }),
+      });
+    },
   },
 }
 </script>

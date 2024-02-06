@@ -52,13 +52,18 @@ export default {
   data() {
     return {
       items: [],
-      itemstatus : 'Mengambil items'
+      itemstatus : 'Mengambil items',
+      app: 'http://127.0.0.1:8000/'
     }
   },
   async created() {
     //like constructor
     try {
-      const response = await axios.get('http://127.0.0.1:8000/api/items');
+      console.log(axios.defaults.headers.post['Authorization']);
+      const response = await axios.get(`${this.app}api/kmm/items`);
+      if (!response.data) {
+        throw new Error('Response is not in JSON format');
+      }
       this.items = response.data.data;
     } catch (e) {
       if (e.response.status === 404) {
@@ -72,6 +77,7 @@ export default {
   mounted() {
     //like update()
     console.log('Dashboard component mounted.');
+    console.log('TES' + import.meta.env.APP_URL)
     Echo.channel('items').listen('ItemAdded', (e) => {
       console.log(e);
       this.items.push(e.item);
