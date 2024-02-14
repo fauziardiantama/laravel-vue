@@ -43,16 +43,8 @@ class Dosen extends Authenticatable
     //timestamps false
     public $timestamps = false;
 
-    public function isAdmin()
+    public function auth()
     {
-        return false;
-    }
-    public function isDosen()
-    {
-        return true;
-    }
-    public function isMahasiswa()
-    {
-        return false;
+        return $this->hasOne(AuthUser::class, 'id_dosen', 'id_dosen');
     }
 }

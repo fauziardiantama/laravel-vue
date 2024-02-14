@@ -18,7 +18,7 @@
         :height="35"
       />
     </CSidebarBrand>
-    <AppSidebarNav />
+    <AppSidebarNav :user="user" />
     <CSidebarToggler
       class="d-none d-lg-flex"
       @click="$store.commit('toggleUnfoldable')"
@@ -39,6 +39,9 @@
     components: {
       AppSidebarNav,
     },
+    props: {
+      user: String
+    },
     setup() {
       const store = useStore()
       return {
@@ -47,6 +50,9 @@
         sidebarUnfoldable: computed(() => store.state.sidebarUnfoldable),
         sidebarVisible: computed(() => store.state.sidebarVisible),
       }
+    },
+    mounted() {
+      console.log('AppSidebar Component mounted.')
     }
   }
 </script>

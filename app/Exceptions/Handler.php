@@ -2,8 +2,11 @@
 
 namespace App\Exceptions;
 
+use ErrorException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
 use Illuminate\Auth\AuthenticationException;
+use League\OAuth2\Server\Exception\OAuthServerException;
+
 use Throwable;
 
 class Handler extends ExceptionHandler
@@ -28,10 +31,19 @@ class Handler extends ExceptionHandler
             //
         });
     }
-    protected function unauthenticated($request, AuthenticationException $exception)
+
+    public function render($request, Throwable $exception)
     {
-        return $request->expectsJson()
-                    ? response()->json(['message' => 'token/session not authorized, can be wrong, expired, or not provided'], 401)
-                    : redirect()->guest(route('login'));
+        if ($exception instanceof ErrorException) {
+            //generate file log error
+            //get route which triggered the error with parameter
+            $errorLog = date('Y-m-d H:i:s') .' '. $request->route()->uri .' '. $exception->getMessage() . ' ' . $exception->getFile() . ' ' . $exception->getLine() . "\n";
+            error_log($errorLog, 3, storage_path('logs/ErrorException.log'));
+            return response()->json([
+                'message' => 'Tidak dapat terhubung ke server'
+            ], 500);
+        }
+
+        return parent::render($request, $exception);
     }
 }

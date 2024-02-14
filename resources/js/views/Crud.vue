@@ -110,14 +110,13 @@ export default {
         description: ''
       },
       itemstatus: 'Mengambil items',
-      showEditModal: false,
-      app: 'https://newkmmd3ti.vokasi.uns.ac.id/'
+      showEditModal: false
     }
   },
   async created() {
     //like constructor
     try {
-      const response = await axios.get(`${this.app}api/items`);
+      const response = await axios.get(`${window.location.origin}/api/kmm/items`);
       this.items = response.data.data;
     } catch (e) {
       if (e.response.status === 404) {
@@ -145,7 +144,7 @@ export default {
   methods: {
     addItem() {
       this.showLoadingAlert();
-      axios.post(`${this.app}api/items`, {
+      axios.post(`${window.location.origin}/api/kmm/items`, {
         item : this.createItem
       })
       .then(response => {
@@ -187,7 +186,7 @@ export default {
       //get item's id which have same id with activeItem id
       const itemId = this.items.find(i => i.id === this.activeItem.id).id;
 
-      axios.put(`${this.app}api/items/${itemId}`, {
+      axios.put(`${window.location.origin}/api/kmm/items/${itemId}`, {
           item : this.activeItem
       })
         .then(response => {
@@ -209,7 +208,7 @@ export default {
       this.showLoadingAlert();
       const itemId = this.items.find(i => i.id === item.id).id;
       
-      axios.delete(`${this.app}api/items/${itemId}`)
+      axios.delete(`${window.location.origin}/api/kmm/items/${itemId}`)
         .then(response => {
           console.log('berhasil delete', response.data.data);
           this.showSuccessAlert('Item Deleted successfully!');

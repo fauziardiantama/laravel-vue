@@ -1,9 +1,11 @@
 import { createStore } from 'vuex';
+import Swal from 'sweetalert2';
 
 export default createStore({
   state: {
     sidebarVisible: '',
     sidebarUnfoldable: false,
+    status: null,
     token: null, // Store the token here
     user: null, // Optional for user data
   },
@@ -17,6 +19,9 @@ export default createStore({
     updateSidebarVisible(state, payload) {
       state.sidebarVisible = payload.value
     },
+    updateStatus(state, value) {
+      state.status = value
+    },
     setToken(state, token) {
       state.token = token;
     },
@@ -26,7 +31,13 @@ export default createStore({
   },
   actions: {
     mahasiswaLogin({ commit }, parameter) {
-      axios.post('/api/mahasiswa/login', parameter.credentials)
+      Swal.fire({
+        title: 'Loading...',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+      });
+      return axios.post('/api/mahasiswa/login', parameter.credentials)
         .then(response => {
           // Extract token and user data from response
           const token = response.data.token;
@@ -40,18 +51,49 @@ export default createStore({
             type: 'mahasiswa',
             data: user
           });
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            icon: "success",
+            title: "Login berhasil!"
+          });
+          console.log('redirect');
           parameter.router();
+          return response;
         })
         .catch(error => {
-          // Handle login errors (e.g., display error messages)
-          console.error('Login error:', error);
-          // Provide feedback to the user
-          // ...
+          if (error.response.status === 422) {
+            // Handle login errors (e.g., display error messages)
+            console.log('Login error:', error);
+            // Provide feedback to the user
+            Swal.fire({
+              title: 'Gagal login!',
+              text: error.response.data.message,
+              icon: 'error'
+            });
+          } else {
+            console.log('Login error:', error);
+            // Provide feedback to the user
+            Swal.fire({
+              title: `Error ${error.response.status}`,
+              text: error.response.data.message ?? error.response.data,
+              icon: 'error'
+            });
+          }
+          throw error;
         });
     },
     dosenLogin({ commit }, parameter) {
       console.log('dosen');
-      axios.post('/api/dosen/login', parameter.credentials)
+      Swal.fire({
+        title: 'Loading...',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+      });
+      return axios.post('/api/dosen/login', parameter.credentials)
         .then(response => {
           // Extract token and user data from response
           console.log(response);
@@ -67,17 +109,47 @@ export default createStore({
             type: 'dosen',
             data: user
           });
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            icon: "success",
+            title: "Login berhasil!"
+          });
           parameter.router();
+          return response;
         })
         .catch(error => {
-          // Handle login errors (e.g., display error messages)
-          console.error('Login error:', error);
-          // Provide feedback to the user
-          // ...
+          if (error.response.status === 422) {
+            // Handle login errors (e.g., display error messages)
+            console.log('Login error:', error);
+            // Provide feedback to the user
+            Swal.fire({
+              title: 'Gagal login!',
+              text: error.response.data.message,
+              icon: 'error'
+            });
+          } else {
+            console.log('Login error:', error);
+            // Provide feedback to the user
+            Swal.fire({
+              title: `Error ${error.response.status}`,
+              text: error.response.data.message ?? error.response.data,
+              icon: 'error'
+            });
+          }
+          throw error;
         });
     },
     adminLogin({ commit }, parameter) {
-      axios.post('/api/admin/login', parameter.credentials)
+      Swal.fire({
+        title: 'Loading...',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => Swal.showLoading()
+      });
+      return axios.post('/api/admin/login', parameter.credentials)
         .then(response => {
           // Extract token and user data from response
           // Extract token and user data from response
@@ -92,13 +164,37 @@ export default createStore({
             type: 'admin',
             data: user
           });
+          Swal.fire({
+            toast: true,
+            position: "top-end",
+            showConfirmButton: false,
+            timer: 3000,
+            icon: "success",
+            title: "Login berhasil!"
+          });
           parameter.router();
+          return response;
         })
         .catch(error => {
-          // Handle login errors (e.g., display error messages)
-          console.error('Login error:', error);
-          // Provide feedback to the user
-          // ...
+          if (error.response.status === 422) {
+            // Handle login errors (e.g., display error messages)
+            console.log('Login error:', error);
+            // Provide feedback to the user
+            Swal.fire({
+              title: 'Gagal login!',
+              text: error.response.data.message,
+              icon: 'error'
+            });
+          } else {
+            console.log('Login error:', error);
+            // Provide feedback to the user
+            Swal.fire({
+              title: `Error ${error.response.status}`,
+              text: error.response.data.message ?? error.response.data,
+              icon: 'error'
+            });
+          }
+          throw error;
         });
     },
     logout({ commit }, parameter) {
@@ -117,6 +213,18 @@ export default createStore({
           console.error('Logout error:', error);
           // Provide feedback to the user
           // ...
+        });
+    },
+    user({ commit }) {
+      return axios.get('/api/user')
+        .then(response => {
+          console.log('User:', response.data);
+          commit('setUser', response.data);
+          return response;
+        })
+        .catch(error => {
+          console.error('User error:', error);
+          throw error;
         });
     }
   },

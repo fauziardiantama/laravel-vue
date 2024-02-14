@@ -13,6 +13,11 @@ import CoreuiVue from '@coreui/vue';
 import CIcon from '@coreui/icons-vue';
 import { iconsSet as icons } from '@/assets/icons';
 import DocsExample from '@/components/DocsExample.vue';
+import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
+import { fab } from '@fortawesome/free-brands-svg-icons';
+import { fas } from '@fortawesome/free-solid-svg-icons';
+import { far } from '@fortawesome/free-regular-svg-icons';
+import { library } from '@fortawesome/fontawesome-svg-core';
 
 import "bootstrap/dist/css/bootstrap.min.css";
 import "bootstrap";
@@ -26,6 +31,8 @@ app.use(store);
 app.use(CoreuiVue);
 //tambah icons dari folder assets
 app.provide('icons', icons);
+library.add(fab, fas, far);
+app.component('font-awesome-icon', FontAwesomeIcon);
 //tambah CIcon ??
 app.component('CIcon', CIcon);
 //tambah DocsExample dari folder components untuk ??

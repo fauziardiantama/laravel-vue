@@ -52,15 +52,14 @@ export default {
   data() {
     return {
       items: [],
-      itemstatus : 'Mengambil items',
-      app: 'http://127.0.0.1:8000/'
+      itemstatus : 'Mengambil items'
     }
   },
   async created() {
     //like constructor
     try {
       console.log(axios.defaults.headers.post['Authorization']);
-      const response = await axios.get(`${this.app}api/kmm/items`);
+      const response = await axios.get(`${window.location.origin}/api/kmm/items`);
       if (!response.data) {
         throw new Error('Response is not in JSON format');
       }

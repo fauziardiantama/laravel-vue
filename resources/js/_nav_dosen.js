@@ -2,7 +2,7 @@ export default [
   {
     component: 'CNavItem',
     name: 'Dashboard',
-    to: '/kmm/dashboard',
+    to: { name: 'DosenTaDashboard' },
     icon: 'cil-speedometer',
   }
 

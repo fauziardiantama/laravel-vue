@@ -1,6 +1,6 @@
 <template>
     <div>
-      <AppSidebar />
+      <AppSidebar :user="'dosen'" />
       <div class="wrapper d-flex flex-column min-vh-100 bg-light">
         <AppHeader />
         <div class="body flex-grow-1 px-3">
@@ -17,7 +17,6 @@
   @import '../styles/style.scss';
 </style>
 
-
 <script>
   import { CContainer } from '@coreui/vue'
   import AppFooter from '@/components/AppFooter.vue'
@@ -25,7 +24,7 @@
   import AppSidebar from '@/components/AppSidebar.vue'
   
   export default {
-    name: 'KmmMahasiswa',
+    name: 'TaDosen',
     components: {
       AppFooter,
       AppHeader,
@@ -33,7 +32,7 @@
       CContainer,
     },
     mounted() {
-      console.log('KMM Component mounted.')
+      console.log('Ta Component mounted.')
     },
   }
 </script>

@@ -19,24 +19,6 @@ const routes = [
         component: () => import('@/components/Home.vue'),
     },
     {
-        path: '/kmm',
-        name: 'Kmm',
-        component: () => import('@/components/Kmm.vue'),
-        redirect: '/kmm/dashboard',
-        children: [
-            {
-                path: 'dashboard',
-                name: 'Dashboard',
-                component: () => import(/* webpackChunkName: "dashboard" */ '@/views/Dashboard.vue'),
-            },
-            {
-                path: 'crud',
-                name: 'Crud',
-                component: () => import(/* webpackChunkName: "dashboard" */ '@/views/Crud.vue'),
-            },
-        ],
-    },
-    {
         path: '/mahasiswa',
         name: 'Mahasiswa',
         component: {
@@ -44,7 +26,7 @@ const routes = [
               return h(resolveComponent('router-view'))
             },
           },
-        redirect: 'mahasiswa/login',
+        redirect: { name: 'MahasiswaLogin'},
         children: [
             {
                 path: 'login',
@@ -57,16 +39,22 @@ const routes = [
                 component: () => import('@/components/Register.vue'),
             },
             {
-                path: 'kmm',
-                name: 'MahasiswaKmm',
-                component: () => import('@/components/KmmMahasiswa.vue'),
-                redirect: 'kmm/dashboard',
+                path: 'ta',
+                name: 'MahasiswaTa',
+                component: () => import('@/components/TaMahasiswa.vue'),
+                redirect: { name: 'MahasiswaTaDashboard'},
                 meta: { mahasiswa: true },
                 children: [
                     {
                         path: 'dashboard',
-                        name: 'MahsiswaKmmDashboard',
-                        component: () => import('@/views/Dashboard.vue'),
+                        name: 'MahasiswaTaDashboard',
+                        component: () => import('@/views/Mahasiswa/Ta/Dashboard.vue'),
+                    },
+                    {
+                        path: 'proposal',
+                        name: 'MahasiswaTaProposal',
+                        meta: { actived: true },
+                        component: () => import('@/views/Mahasiswa/Ta/Proposal.vue'),
                     }
                 ]
             }
@@ -80,7 +68,7 @@ const routes = [
               return h(resolveComponent('router-view'))
             },
           },
-        redirect: '/dosen/login',
+        redirect: { name: 'DosenLogin'},
         children: [
             {
                 path: 'login',
@@ -88,15 +76,16 @@ const routes = [
                 component: () => import('@/components/DosenLogin.vue'),
             },
             {
-                path: 'kmm',
-                name: 'DosenKmm',
-                component: () => import('@/components/KmmDosen.vue'),
-                redirect: 'kmm/dashboard',
+                path: 'Ta',
+                name: 'DosenTa',
+                component: () => import('@/components/TaDosen.vue'),
+                redirect: { name: 'DosenTaDashboard'},
+                meta: { dosen: true },
                 children: [
                     {
                         path: 'dashboard',
-                        name: 'DosenKmmDashboard',
-                        component: () => import('@/views/Dashboard.vue'),
+                        name: 'DosenTaDashboard',
+                        component: () => import('@/views/Dosen/Ta/Dashboard.vue'),
                     }
                 ]
             }
@@ -105,7 +94,7 @@ const routes = [
     {
         path: '/admin',
         name: 'Admin',
-        redirect: '/admin/login',
+        redirect: { name: 'AdminLogin'},
         component: {
             render() {
               return h(resolveComponent('router-view'))
@@ -118,20 +107,31 @@ const routes = [
                 component: () => import('@/components/AdminLogin.vue'),
             },
             {
-                path: 'kmm',
-                name: 'AdminKmm',
-                component: () => import('@/components/Kmm.vue'),
-                redirect: 'kmm/dashboard',
+                path: 'Ta',
+                name: 'AdminTa',
+                component: () => import('@/components/TaAdmin.vue'),
+                redirect: { name: 'AdminTaDashboard'},
+                meta: { admin: true },
                 children: [
                     {
                         path: 'dashboard',
-                        name: 'AdminKmmDashboard',
-                        component: () => import('@/views/Dashboard.vue'),
+                        name: 'AdminTaDashboard',
+                        component: () => import('@/views/Admin/Ta/Dashboard.vue'),
                     },
                     {
-                        path: 'crud',
-                        name: 'AdminKmmCrud',
-                        component: () => import('@/views/Crud.vue'),
+                        path: 'mahasiswa',
+                        name: 'AdminTaMahasiswa',
+                        component: () => import('@/views/Admin/Ta/Mahasiswa.vue'),
+                    },
+                    {
+                        path: 'proposal',
+                        name: 'AdminTaProposal',
+                        component: () => import('@/views/Admin/Ta/Proposal.vue'),
+                    },
+                    {
+                        path: 'tahunakademik',
+                        name: 'AdminTaTahunAkademik',
+                        component: () => import('@/views/Admin/Ta/TahunAkademik.vue'),
                     }
                 ]
             }
@@ -146,17 +146,16 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
     if (to.matched.some(record => record.meta.mahasiswa)) {
-      // Route requires authentication
       try {
-        const response = await axios.get('/api/mahasiswa');
-        if (response.status === 200 && response.data) {
-          // User is authenticated
-          console.log('User is authenticated');
+        console.log('check mahasiswa');
+        const response = await axios.get('/api/user');
+        if (response.status === 200 && response.data.token.name == "mahasiswa") {
+          console.log('berhasil');
           next();
         } else {
-          // Handle potential errors with authentication response
-          console.error('Authentication error:', response.data);
-          next({ name: 'login' }); // Redirect to login
+          console.log('gagal');
+          console.log(response.data);
+          next({ name: 'MahasiswaLogin' });
         }
       } catch (e) {
         if (e.response.status === 401) {
@@ -164,21 +163,15 @@ router.beforeEach(async (to, from, next) => {
             next({ name: 'MahasiswaLogin' });
           } else {
             console.log(e);
-          }
-        ; // Redirect to login
+          } // Redirect to login
       }
     } else if (to.matched.some(record => record.meta.dosen)) {
-         // Route requires authentication
       try {
-        const response = await axios.get('/api/dosen');
-        if (response.status === 200 && response.data) {
-          // User is authenticated
-          console.log('User is authenticated');
+        const response = await axios.get('/api/user');
+        if (response.status === 200 && response.data.token.name == "dosen") {
           next();
         } else {
-          // Handle potential errors with authentication response
-          console.error('Authentication error:', response.data);
-          next({ name: 'DosenLogin' }); // Redirect to login
+          next({ name: 'DosenLogin' });
         }
       } catch (e) {
         if (e.response.status === 401) {
@@ -186,31 +179,41 @@ router.beforeEach(async (to, from, next) => {
             next({ name: 'DosenLogin' });
           } else {
             console.log(e);
-          }
-        ; // Redirect to login
+          } // Redirect to login
       }
     } else if (to.matched.some(record => record.meta.admin)) {
          // Route requires authentication
-      try {
-        const response = await axios.get('/api/admin');
-        if (response.status === 200 && response.data) {
-          // User is authenticated
-          console.log('User is authenticated');
-          next();
-        } else {
-          // Handle potential errors with authentication response
-          console.error('Authentication error:', response.data);
-          next({ name: 'AdminLogin' }); // Redirect to login
-        }
-      } catch (e) {
-        if (e.response.status === 401) {
-            console.log(e.response.data);
-            next({ name: 'AdminLogin' });
+         try {
+          const response = await axios.get('/api/user');
+          if (response.status === 200 && response.data.token.name == "admin") {
+            next();
           } else {
-            console.log(e);
+            next({ name: 'AdminLogin' });
           }
-        ; // Redirect to login
-      }
+        } catch (e) {
+          if (e.response.status === 401) {
+              console.log(e.response.data);
+              next({ name: 'AdminLogin' });
+            } else {
+              console.log(e);
+            } // Redirect to login
+        }
+    } else if (to.matched.some(record => record.meta.actived)) {
+        try {
+          const response = await axios.get('/api/user');
+          if (response.status === 200 && response.data.user.status == 1) {
+            next();
+          } else {
+            next({ name: 'MahasiswaTaDashboard' });
+          }
+        } catch (e) {
+          if (e.response.status === 401) {
+              console.log(e.response.data);
+              next({ name: 'MahasiswaLogin' });
+            } else {
+              console.log(e);
+            }// Redirect to login
+        }
     } else {
       // Route doesn't require authentication
       next();

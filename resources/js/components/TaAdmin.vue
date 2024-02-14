@@ -1,6 +1,6 @@
 <template>
     <div>
-      <AppSidebar_dosen />
+      <AppSidebar :user="'admin'" />
       <div class="wrapper d-flex flex-column min-vh-100 bg-light">
         <AppHeader />
         <div class="body flex-grow-1 px-3">
@@ -22,18 +22,18 @@
   import { CContainer } from '@coreui/vue'
   import AppFooter from '@/components/AppFooter.vue'
   import AppHeader from '@/components/AppHeader.vue'
-  import AppSidebar_dosen from '@/components/AppSidebar_dosen.vue'
+  import AppSidebar from '@/components/AppSidebar.vue'
   
   export default {
-    name: 'KmmDosen',
+    name: 'Ta',
     components: {
       AppFooter,
       AppHeader,
-      AppSidebar_dosen,
+      AppSidebar,
       CContainer,
     },
     mounted() {
-      console.log('KMM Component mounted.')
+      console.log('Ta Component mounted.')
     },
   }
 </script>

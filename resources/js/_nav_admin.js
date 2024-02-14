@@ -2,16 +2,27 @@ export default [
   {
     component: 'CNavItem',
     name: 'Dashboard',
-    to: '/kmm/dashboard',
+    to: { name: 'AdminTaDashboard' },
     icon: 'cil-speedometer',
   },
   {
     component: 'CNavItem',
-    name: 'CRUD',
-    to: '/kmm/crud',
+    name: 'Mahasiswa',
+    to: { name: 'AdminTaMahasiswa' },
     icon: 'cil-settings',
   },
-
+  {
+    component: 'CNavItem',
+    name: 'Proposal TA',
+    to: { name: 'AdminTaProposal' },
+    icon: 'cil-settings',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Tahun Akademik',
+    to: { name: 'AdminTaTahunAkademik' },
+    icon: 'cil-settings',
+  }
   // {
   //   component: 'CNavItem',
   //   name: 'Download CoreUI',

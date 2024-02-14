@@ -2,8 +2,16 @@ export default [
   {
     component: 'CNavItem',
     name: 'Dashboard',
-    to: '/kmm/dashboard',
+    to: { name: 'MahasiswaTaDashboard' },
     icon: 'cil-speedometer',
+    needactivation: false
+  },
+  {
+    component: 'CNavItem',
+    name: 'Proposal TA',
+    to: { name: 'MahasiswaTaProposal' },
+    icon: 'cil-pencil',
+    needactivation: true
   }
   // {
   //   component: 'CNavItem',

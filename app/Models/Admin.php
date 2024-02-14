@@ -32,16 +32,9 @@ class Admin extends Authenticatable
     //timestamps false
     public $timestamps = false;
 
-    public function isAdmin()
+    //relationship with auth_user
+    public function auth()
     {
-        return true;
-    }
-    public function isDosen()
-    {
-        return false;
-    }
-    public function isMahasiswa()
-    {
-        return false;
+        return $this->hasOne(AuthUser::class, 'id_admin', 'id_admin');
     }
 }

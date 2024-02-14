@@ -52,17 +52,9 @@ return [
             'driver' => 'session',
             'provider' => 'admin',
         ],
-        'mahasiswa' => [
+        'passport' => [
             'driver' => 'passport',
             'provider' => 'auth',
-        ],
-        'dosen' => [
-            'driver' => 'passport',
-            'provider' => 'dosen',
-        ],
-        'admin' => [
-            'driver' => 'passport',
-            'provider' => 'admin',
         ],
     ],
 
@@ -88,24 +80,21 @@ return [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
-
         'mahasiswa' => [
             'driver' => 'eloquent',
             'model' => App\Models\Mahasiswa::class,
         ],
-
         'dosen' => [
             'driver' => 'eloquent',
             'model' => App\Models\Dosen::class,
         ],
-
         'admin' => [
             'driver' => 'eloquent',
             'model' => App\Models\Admin::class,
         ],
         'auth' => [
             'driver' => 'eloquent',
-            'model' => App\Models\AuthMahasiswa::class,
+            'model' => App\Models\AuthUser::class,
         ],
 
         // 'users' => [

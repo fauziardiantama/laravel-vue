@@ -49,21 +49,18 @@ class Mahasiswa extends Authenticatable
     //timestamps false
     public $timestamps = false;
 
-    public function isAdmin()
-    {
-        return false;
-    }
-    public function isDosen()
-    {
-        return false;
-    }
-    public function isMahasiswa()
-    {
-        return true;
-    }
-
     public function auth()
     {
-        return $this->hasOne(AuthMahasiswa::class, 'nim', 'nim');
+        return $this->hasOne(AuthUser::class, 'nim', 'nim');
+    }
+
+    public function dokumenRegistrasi()
+    {
+        return $this->hasOne(DokumenRegistrasi::class, 'nim', 'nim');
+    }
+
+    public function proposalTA()
+    {
+        return $this->hasOne(ProposalTA::class, 'nim', 'nim');
     }
 }

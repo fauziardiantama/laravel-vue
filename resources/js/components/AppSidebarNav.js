@@ -9,7 +9,10 @@ import {
   CNavTitle,
 } from '@coreui/vue'
 
-import nav from '@/_nav_mahasiswa.js'
+import navMahasiswa from '@/_nav_mahasiswa.js'
+import navDosen from '@/_nav_dosen.js'
+import navAdmin from '@/_nav_admin.js'
+import { useStore } from 'vuex'
 
 const normalizePath = (path) =>
   decodeURI(path)
@@ -50,8 +53,8 @@ const AppSidebarNav = defineComponent({
     CNavGroup,
     CNavTitle,
   },
-  setup() {
-    const route = useRoute()
+  props: ['user'],
+  setup(props) {
     const firstRender = ref(true)
 
     onMounted(() => {
@@ -59,6 +62,9 @@ const AppSidebarNav = defineComponent({
     })
 
     const renderItem = (item) => {
+      const route = useRoute()
+      const store = useStore()
+      
       if (item.items) {
         return h(
           CNavGroup,
@@ -84,7 +90,7 @@ const AppSidebarNav = defineComponent({
         ? h(
             RouterLink,
             {
-              to: item.to,
+              to: (item.disabled || item.needactivation && (store.state.status === 0 || store.state.status === null)) ? '' : item.to,
               custom: true,
             },
             {
@@ -95,6 +101,7 @@ const AppSidebarNav = defineComponent({
                     active: props.isActive,
                     href: props.href,
                     onClick: () => props.navigate(),
+                    disabled: (item.disabled || item.needactivation && (store.state.status === 0 || store.state.status === null))
                   },
                   {
                     default: () => [
@@ -134,7 +141,7 @@ const AppSidebarNav = defineComponent({
         CSidebarNav,
         {},
         {
-          default: () => nav.map((item) => renderItem(item)),
+          default: () => props.user == "mahasiswa" ? navMahasiswa.map((item) => renderItem(item)) : props.user == "dosen" ? navDosen.map((item) => renderItem(item)) : navAdmin.map((item) => renderItem(item)),
         },
       )
   },
