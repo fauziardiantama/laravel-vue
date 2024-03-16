@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "06805452e79f438c84bdc5ee273a59e6",
+    "content-hash": "96d5297785fba1c9e9ae67657ecad64c",
     "packages": [
         {
             "name": "beyondcode/laravel-websockets",
@@ -1475,6 +1475,181 @@
                 }
             ],
             "time": "2023-12-03T19:50:20+00:00"
+        },
+        {
+            "name": "jstewmc/chunker",
+            "version": "v0.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jstewmc/chunker.git",
+                "reference": "845048f45f731bd83a5b55bdebcaed534da150cf"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jstewmc/chunker/zipball/845048f45f731bd83a5b55bdebcaed534da150cf",
+                "reference": "845048f45f731bd83a5b55bdebcaed534da150cf",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "mikey179/vfsstream": "^1.6",
+                "phpunit/phpunit": "^9",
+                "roave/security-advisories": "dev-latest",
+                "slevomat/coding-standard": "^6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Jstewmc\\Chunker\\": "src/"
+                },
+                "classmap": [
+                    "tests/TestCase.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Contributors",
+                    "homepage": "https://github.com/jstewmc/php-helpers/contributors"
+                }
+            ],
+            "description": "Chunk a very large file or string with PHP (multi-byte safe)",
+            "keywords": [
+                "chunk",
+                "file",
+                "multi-byte",
+                "php",
+                "string"
+            ],
+            "support": {
+                "issues": "https://github.com/jstewmc/chunker/issues",
+                "source": "https://github.com/jstewmc/chunker/tree/v0.2.1"
+            },
+            "time": "2021-10-22T18:22:01+00:00"
+        },
+        {
+            "name": "jstewmc/rtf",
+            "version": "v0.5.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jstewmc/rtf.git",
+                "reference": "bb84c69acbda53238e073bbdecdaa613ceb95729"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jstewmc/rtf/zipball/bb84c69acbda53238e073bbdecdaa613ceb95729",
+                "reference": "bb84c69acbda53238e073bbdecdaa613ceb95729",
+                "shasum": ""
+            },
+            "require": {
+                "jstewmc/stream": "^0.4.2"
+            },
+            "require-dev": {
+                "mikey179/vfsstream": "^1.6",
+                "phpunit/phpunit": "^9.0",
+                "roave/security-advisories": "dev-latest",
+                "slevomat/coding-standard": "^6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Jstewmc\\Rtf\\": "src/"
+                },
+                "classmap": [
+                    "tests/Element/TestElement.php",
+                    "tests/Element/Control/TestControl.php"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jack Clayton",
+                    "email": "clayjs0@gmail.com"
+                }
+            ],
+            "description": "Read and write Rich Text Format (RTF) documents with PHP",
+            "keywords": [
+                "format",
+                "lex",
+                "parse",
+                "php",
+                "read",
+                "render",
+                "rich",
+                "rtf",
+                "text",
+                "write"
+            ],
+            "support": {
+                "issues": "https://github.com/jstewmc/rtf/issues",
+                "source": "https://github.com/jstewmc/rtf/tree/v0.5.2"
+            },
+            "time": "2021-11-12T20:37:13+00:00"
+        },
+        {
+            "name": "jstewmc/stream",
+            "version": "v0.4.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/jstewmc/stream.git",
+                "reference": "b5d459e28bb22efb98256d874a09d728362d476e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/jstewmc/stream/zipball/b5d459e28bb22efb98256d874a09d728362d476e",
+                "reference": "b5d459e28bb22efb98256d874a09d728362d476e",
+                "shasum": ""
+            },
+            "require": {
+                "ext-mbstring": "*",
+                "jstewmc/chunker": "^0.2",
+                "php": "^7.4 || ^8.0"
+            },
+            "require-dev": {
+                "mikey179/vfsstream": "^1.6",
+                "phpunit/phpunit": "^9",
+                "roave/security-advisories": "dev-latest",
+                "slevomat/coding-standard": "^6"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Jstewmc\\Stream\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Jack Clayton and Contributors",
+                    "homepage": "https://github.com/jstewmc/php-helpers/contributors"
+                }
+            ],
+            "description": "Stream a very large text file or string character-by-character",
+            "keywords": [
+                "character",
+                "file",
+                "php",
+                "split",
+                "stream",
+                "string"
+            ],
+            "support": {
+                "issues": "https://github.com/jstewmc/stream/issues",
+                "source": "https://github.com/jstewmc/stream/tree/v0.4.2"
+            },
+            "time": "2021-10-26T17:52:53+00:00"
         },
         {
             "name": "laravel/framework",

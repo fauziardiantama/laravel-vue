@@ -12,13 +12,17 @@
     "
   >
     <CSidebarBrand>
-      <CIcon
+      <!-- <CIcon
         custom-class-name="sidebar-brand-full"
         :icon="logoNegative"
         :height="35"
-      />
+      /> -->
+      <div class="sidebar-brand-full text-white m-3 mt-4 mb-4">
+        <h5>D3 Teknik Informatika</h5>
+      </div>
     </CSidebarBrand>
-    <AppSidebarNav :user="user" />
+    <AppSidebarNav v-if="type=='ta'" :user="user" />
+    <AppSidebarNavKmm v-if="type=='kmm'" :user="user" />
     <CSidebarToggler
       class="d-none d-lg-flex"
       @click="$store.commit('toggleUnfoldable')"
@@ -31,6 +35,7 @@
   import { useStore } from 'vuex'
 
   import { AppSidebarNav } from './AppSidebarNav'
+  import { AppSidebarNavKmm } from './AppSidebarNavKmm'
   import { logoNegative } from '@/assets/brand/logo-negative'
   import { sygnet } from '@/assets/brand/sygnet'
 
@@ -38,9 +43,11 @@
     name: 'AppSidebar',
     components: {
       AppSidebarNav,
+      AppSidebarNavKmm,
     },
     props: {
-      user: String
+      user: String,
+      type: String,
     },
     setup() {
       const store = useStore()

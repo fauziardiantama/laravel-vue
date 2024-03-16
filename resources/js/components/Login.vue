@@ -7,8 +7,14 @@
               <CCard class="p-4">
                 <CCardBody>
                   <CForm>
-                    <h1>Login {{ for }}</h1>
-                    <p class="text-medium-emphasis">Masuk ke akun anda</p>
+                    <h1>Login {{ userType }}</h1>
+                    <p v-if="userType == 'mahasiswa'" class="text-medium-emphasis">
+                      <router-link class="px-0" :to="{ name: 'DosenLogin'}">Pergi ke halaman login dosen</router-link>
+                    </p>
+                    <p v-if="userType == 'dosen'" class="text-medium-emphasis">
+                      <router-link class="px-0" :to="{ name: 'MahasiswaLogin'}">Pergi ke halaman login mahasiswa</router-link>
+                    </p>
+                    <p v-if="userType == 'admin'" class="text-medium-emphasis">Masuk ke akun anda</p>
                     <CInputGroup class="mb-3">
                       <CInputGroupText>
                         <CIcon icon="cil-user" />
@@ -74,17 +80,17 @@
     },
     computed: {
       emailplaceholder() {
-        return (this.for === 'mahasiswa') ? 'E-mail mahasiswa (@student.uns.ac.id)' : 'Masukkan email';
+        return (this.userType === 'mahasiswa') ? 'E-mail mahasiswa (@student.uns.ac.id)' : 'Masukkan email';
       }
     },
     props: {
         mahasiswa: Boolean,
-        for: String,
+        userType: String,
         form_validation: Object
     },
     mounted() {
       console.log('Login Component mounted.');
-      console.log(this.for);
+      console.log(this.userType);
     },
     methods: {
       login() {

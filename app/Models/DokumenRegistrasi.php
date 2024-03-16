@@ -16,7 +16,9 @@ class DokumenRegistrasi extends Model
         'krs',
         'transkrip',
         'bukti_seminar',
-        'kartu_mahasiswa'
+        'kartu_mahasiswa',
+        'token',
+        'token_expired'
     ];
 
     //timestamps false

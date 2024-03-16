@@ -4,6 +4,12 @@ export default [
     name: 'Dashboard',
     to: { name: 'DosenTaDashboard' },
     icon: 'cil-speedometer',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Jadwal',
+    to: { name: 'DosenTaJadwal' },
+    icon: 'cil-settings',
   }
 
   // {

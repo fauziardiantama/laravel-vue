@@ -7,6 +7,7 @@ use App\Models\Mahasiswa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\baseMail;
+use App\Events\Mhs;
 
 class MahasiswaController extends Controller
 {
@@ -15,9 +16,24 @@ class MahasiswaController extends Controller
      */
     public function index()
     {
-        $mahasiswa = Mahasiswa::orderBy('nim', 'desc')->paginate(10);
+        $mahasiswa = Mahasiswa::orderBy('nim', 'desc')->with('dokumenRegistrasi','magang','proposalTa')->paginate(10);
         return response()->json([
             'message' => 'berhasil menampilkan data mahasiswa',
+            'data' => $mahasiswa
+        ]);
+    }
+
+    public function search(Request $request)
+    {
+        $mahasiswa = Mahasiswa::where('nama', 'like', '%'.$request->kueri.'%')
+        ->orWhere('email', 'like', '%'.$request->kueri.'%')
+        ->orWhere('nim', 'like', '%'.$request->kueri.'%')
+        ->orWhere('no_telp', 'like', '%'.$request->kueri.'%')
+        ->orderBy('nim', 'desc')
+        ->paginate(10);
+
+        return response()->json([
+            'message' => 'Berhasil menampilkan instansi',
             'data' => $mahasiswa
         ]);
     }
@@ -27,7 +43,7 @@ class MahasiswaController extends Controller
      */
     public function show($nim)
     {
-        $mahasiswa = Mahasiswa::where('nim', $nim)->first();
+        $mahasiswa = Mahasiswa::where('nim', $nim)->with('dokumenRegistrasi','magang','proposalTa')->first();
         if ($mahasiswa) {
             return response()->json([
                 'message' => 'berhasil menampilkan data mahasiswa',
@@ -50,6 +66,7 @@ class MahasiswaController extends Controller
             $mahasiswa = Mahasiswa::where('nim', $nim)->first();
             if ($mahasiswa) {
                 $mahasiswa->update($request->all());
+                event( new Mhs("update", ["Admin","User.".$nim], false, $mahasiswa));
                 return response()->json([
                     'message' => 'data mahasiswa berhasil diubah',
                     'data' => $mahasiswa
@@ -78,7 +95,7 @@ class MahasiswaController extends Controller
                     [
                         "view" => "emails.akun",
                         "from" => [
-                            "address" => "admin@newkmmd3ti.vokasi.uns.ac.id",
+                            "address" =>  env('MAIL_FROM_ADDRESS'),
                             "name" => "Notifikasi D3TI"
                         ],
                         "tags" => [ "verifikasi", "akun", "d3ti","kuliah","notifikasi" ],
@@ -94,6 +111,7 @@ class MahasiswaController extends Controller
                         "attachments" => []
                     ]
                 ));
+                event( new Mhs("update", ["Admin","User.".$nim], false, $mahasiswa));
                 return response()->json([
                     'message' => 'data mahasiswa berhasil diaktifkan',
                     'data' => $mahasiswa
@@ -131,11 +149,15 @@ class MahasiswaController extends Controller
                             "nama_user" => $mahasiswa->nama,
                             "judul" => "Akun Anda Belum Dapat Diaktivasi",
                             "pesan" => "Admin belum bisa menyetujui akun Anda. Silahkan periksa dokumen anda bila ada yang salah atau kurang lalu ajukan kembali, atau hubungi admin untuk informasi lebih lanjut.",
-                            "tautan" => null
+                            "tautan" => null,
+                            "useakun" => false,
+                            "akun" => []
                         ],
                         "attachments" => []
                     ]
                 ));
+                // send #EVENT MahasiswaUpdated to Mahasiswa.nim dan Admin
+                event( new Mhs("update", ["Admin","User.".$nim], false, $mahasiswa));
                 return response()->json([
                     'message' => 'data mahasiswa berhasil ditolak',
                     'data' => $mahasiswa
@@ -149,6 +171,7 @@ class MahasiswaController extends Controller
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'data mahasiswa gagal ditolak',
+                'error' => $e->getMessage(),
                 'data' => null
             ], 500);
         }
@@ -162,10 +185,13 @@ class MahasiswaController extends Controller
         try {
             $mahasiswa = Mahasiswa::where('nim', $nim)->first();
             if ($mahasiswa) {
+                $legacy = $mahasiswa;
                 $mahasiswa->delete();
+                // send #EVENT MahasiswaUpdated to Mahasiswa.nim dan Admin
+                event( new Mhs("destroy", ["Admin","User.".$nim], true, $legacy));
                 return response()->json([
                     'message' => 'data mahasiswa berhasil dihapus',
-                    'data' => $mahasiswa
+                    'data' => $legacy
                 ]);
             } else {
                 return response()->json([

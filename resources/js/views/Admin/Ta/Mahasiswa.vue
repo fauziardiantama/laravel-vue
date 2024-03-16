@@ -7,10 +7,11 @@
             <p class="col-7">Daftar Mahasiswa</p>
             <!-- Make pagination -->
             <div class="col-5 mt-2 text-right right">
-              <pagination  :pagination="mahasiswas"
-                     @paginate="getUsers()"
-                     :offset="4">
-            </pagination>
+              <pagination
+                :pagination="mahasiswas"
+                @paginate="getUsers()"
+                :offset="4">
+              </pagination>
             </div>
           </CCardHeader>
           <CCardBody>
@@ -26,7 +27,7 @@
                 </CTableRow>
               </CTableHead>
               <CTableBody v-if="mahasiswas.data.length > 0">
-                <CTableRow v-for="(mahasiswa, index) in mahasiswas.data" :key="mahasiswa.id">
+                <CTableRow v-for="(mahasiswa) in mahasiswas.data" :key="mahasiswa.id">
                   <CTableDataCell class="text-center">
                     {{ mahasiswa.nim }}
                   </CTableDataCell>
@@ -143,7 +144,6 @@
 </style>
 
 <script>
-import Swal from 'sweetalert2';
 import pagination from '@/components/Pagination.vue';
 
 export default {
@@ -154,13 +154,13 @@ export default {
   data() {
     return {
       mahasiswas: {
-            total: 0,
-            per_page: 2,
-            from: 1,
-            to: 0,
-            current_page: 1,
-            data: []
-        },
+        total: 0,
+        per_page: 2,
+        from: 1,
+        to: 0,
+        current_page: 1,
+        data: []
+      },
       offset: 4,
       createItem: {
         name: '',
@@ -181,22 +181,76 @@ export default {
     }
   },
   async created() {
-    //like constructor
     this.getUsers();
   },
   mounted() {
-    //like update()
     console.log('Dashboard component mounted.');
-    // Echo.channel('items').listen('ItemAdded', (e) => {
-    //   console.log(e);
-    //   this.items.push(e.item);
-    // }).listen('ItemUpdated', (e) => {
-    //   console.log(e);
-    //   this.items = this.items.map(i => i.id === e.item.id ? e.item : i);
-    // }).listen('ItemDeleted', (e) => {
-    //   console.log(e);
-    //   this.items = this.items.filter(i => i.id !== e.id);
-    // });
+    Echo.private('Admin')
+    .listen('Mhs', (e) => {
+      this.getUsers();
+      if (e.type == "update" && e.item.nim == this.activeMahasiswa.nim) {
+          this.openDetailModal(e.item);
+        } else if (e.type == "destroy" && e.item.nim == this.activeMahasiswa.nim) {
+          this.closeModal();
+        }
+    })
+    .listen("DokReg", (e) => {
+      if (e.type == "store" && e.item.nim == this.activeMahasiswa.nim) {
+          this.activeMahasiswa.dokumens = [];
+          if (e.item.krs != null) {
+            this.activeMahasiswa.dokumens.push({
+              nama: 'KRS',
+              link:  `${window.location.origin}/mahasiswa/dokumen-registrasi/krs/${e.item.token}/${e.item.krs}`
+            });
+          }
+          if (e.item.kartu_mahasiswa != null) {
+            this.activeMahasiswa.dokumens.push({
+              nama: 'Kartu Mahasiswa',
+              link: `${window.location.origin}/mahasiswa/dokumen-registrasi/kartu-mahasiswa/${e.item.token}/${e.item.kartu_mahasiswa}`
+            });
+          }
+          if (e.item.transkrip != null) {
+            this.activeMahasiswa.dokumens.push({
+              nama: 'Transkrip',
+              link: `${window.location.origin}/mahasiswa/dokumen-registrasi/transkrip/${e.item.token}/${e.item.transkrip}`
+            });
+          }
+          if (e.item.bukti_seminar != null) {
+            this.activeMahasiswa.dokumens.push({
+              nama: 'Bukti Seminar',
+              link: `${window.location.origin}/mahasiswa/dokumen-registrasi/bukti-seminar/${e.item.token}/${e.item.bukti_seminar}`
+            });
+          }
+      } else if (e.type == "destroy" && e.item.nim == this.activeMahasiswa.nim) {
+        this.activeMahasiswa.dokumens = [];
+        if (e.isEmpty == false) {
+          if (e.item.krs != null) {
+            this.activeMahasiswa.dokumens.push({
+              nama: 'KRS',
+              link:  `${window.location.origin}/mahasiswa/dokumen-registrasi/krs/${data.token}/${e.item.krs}`
+            });
+          }
+          if (e.item.kartu_mahasiswa != null) {
+            this.activeMahasiswa.dokumens.push({
+              nama: 'Kartu Mahasiswa',
+              link: `${window.location.origin}/mahasiswa/dokumen-registrasi/kartu-mahasiswa/${e.item.token}/${e.item.kartu_mahasiswa}`
+            });
+          }
+          if (e.item.transkrip != null) {
+            this.activeMahasiswa.dokumens.push({
+              nama: 'Transkrip',
+              link: `${window.location.origin}/mahasiswa/dokumen-registrasi/transkrip/${e.item.token}/${e.item.transkrip}`
+            });
+          }
+          if (e.item.bukti_seminar != null) {
+            this.activeMahasiswa.dokumens.push({
+              nama: 'Bukti Seminar',
+              link: `${window.location.origin}/mahasiswa/dokumen-registrasi/bukti-seminar/${e.item.token}/${e.item.bukti_seminar}`
+            });
+          }
+        }
+      }
+    });
   },
   methods: {
     getUsers() {
@@ -220,28 +274,28 @@ export default {
       }
       axios.get(`${window.location.origin}/api/ta/dokumen_registrasi/${item.nim}`)
       .then(response => {
-        if (response.data.data.krs != null) {
+          if(response.data.data.krs != null) {
             this.activeMahasiswa.dokumens.push({
               nama: 'KRS',
-              link: window.location.origin + '/mahasiswa/dokumen-registrasi/krs/' + response.data.data.krs
+              link:  `${window.location.origin}/mahasiswa/dokumen-registrasi/krs/${response.data.data.token}/${response.data.data.krs}`
             });
           }
-          if (response.data.data.kartu_mahasiswa != null) {
+          if(response.data.data.kartu_mahasiswa != null) {
             this.activeMahasiswa.dokumens.push({
               nama: 'Kartu Mahasiswa',
-              link: window.location.origin + '/mahasiswa/dokumen-registrasi/kartu-mahasiswa/' + response.data.data.kartu_mahasiswa
+              link: `${window.location.origin}/mahasiswa/dokumen-registrasi/kartu-mahasiswa/${response.data.data.token}/${response.data.data.kartu_mahasiswa}`
             });
           }
-          if (response.data.data.transkrip != null) {
+          if(response.data.data.transkrip != null) {
             this.activeMahasiswa.dokumens.push({
               nama: 'Transkrip',
-              link: window.location.origin + '/mahasiswa/dokumen-registrasi/transkrip/' + response.data.data.transkrip
+              link: `${window.location.origin}/mahasiswa/dokumen-registrasi/transkrip/${response.data.data.token}/${response.data.data.transkrip}`
             });
           }
-          if (response.data.data.bukti_seminar != null) {
+          if(response.data.data.bukti_seminar != null) {
             this.activeMahasiswa.dokumens.push({
               nama: 'Bukti Seminar',
-              link: window.location.origin + '/mahasiswa/dokumen-registrasi/bukti-seminar/' + response.data.data.bukti_seminar
+              link: `${window.location.origin}/mahasiswa/dokumen-registrasi/bukti-seminar/${response.data.data.token}/${response.data.data.bukti_seminar}`
             });
           }
       })
@@ -267,10 +321,10 @@ export default {
       }
     },
     approve(mahasiswa) {
-      this.showLoadingAlert();
+      this.$store.dispatch('showLoadingAlert');
       axios.put(`${window.location.origin}/api/ta/mahasiswa/${mahasiswa.nim}/aktif`)
       .then(response => {
-        this.showSuccessAlert('Mahasiswa disetujui!');
+        this.$store.dispatch('showSuccessAlert', 'Mahasiswa disetujui!');
         this.closeModal();
         this.openDetailModal(response.data.data);
         this.getUsers();
@@ -278,18 +332,24 @@ export default {
       .catch(error => {
         if (error.response.status === 400) {
           console.log(error.response.data);
-          this.showErrorAlert('Gagal menyetujui mahasiswa!', error.response.data);
+          this.$store.dispatch('showErrorAlert', {
+            title: 'Gagal menyetujui mahasiswa!',
+            message: error.response.data.message
+          });
         } else {
           console.log(error);
-          this.showErrorAlert('Gagal menyetujui mahasiswa!', error.response.status);
+          this.$store.dispatch('showErrorAlert', {
+            title: 'Gagal menyetujui mahasiswa!',
+            message: error.response.status
+          });
         }
       });
     },
     reject(mahasiswa) {
-      this.showLoadingAlert();
+      this.$store.dispatch('showLoadingAlert');
       axios.put(`${window.location.origin}/api/ta/mahasiswa/${mahasiswa.nim}/reject`)
       .then(response => {
-        this.showSuccessAlert('Mahasiswa ditolak!');
+        this.$store.dispatch('showSuccessAlert', 'Mahasiswa ditolak!');
         this.closeModal();
         this.openDetailModal(response.data.data);
         this.getUsers();
@@ -297,39 +357,19 @@ export default {
       .catch(error => {
         if (error.response.status === 400) {
           console.log(error.response.data);
-          this.showErrorAlert('Gagal menolak mahasiswa!', error.response.data);
+          this.$store.dispatch('showErrorAlert', {
+            title: 'Gagal menolak mahasiswa!',
+            message: error.response.data.message
+          });
         } else {
           console.log(error);
-          this.showErrorAlert('Gagal menolak mahasiswa!', error.response.status);
+          this.$store.dispatch('showErrorAlert', {
+            title: 'Gagal menolak mahasiswa!',
+            message: error.response.status
+          });
         }
       });
-    },
-    showLoadingAlert() {
-      Swal.fire({
-        title: 'Loading...',
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => Swal.showLoading()
-      });
-    },
-    showSuccessAlert(message) {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 3000,
-        icon: "success",
-        title: message
-      });
-    },
-    showErrorAlert(message, error) {
-      Swal.fire({
-        title: `Error ${error.status}`,
-        text: message,
-        icon: 'error',
-        details: error.message || error // Display detailed error message if available
-      });
-    },
+    }
   }
 }
 </script>

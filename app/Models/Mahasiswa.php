@@ -59,6 +59,11 @@ class Mahasiswa extends Authenticatable
         return $this->hasOne(DokumenRegistrasi::class, 'nim', 'nim');
     }
 
+    public function magang()
+    {
+        return $this->hasOne(Magang::class, 'nim', 'nim');
+    }
+
     public function proposalTA()
     {
         return $this->hasOne(ProposalTA::class, 'nim', 'nim');

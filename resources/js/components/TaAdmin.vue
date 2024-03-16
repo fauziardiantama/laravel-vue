@@ -1,6 +1,6 @@
 <template>
     <div>
-      <AppSidebar :user="'admin'" />
+      <AppSidebar :type="'ta'" :user="'admin'" />
       <div class="wrapper d-flex flex-column min-vh-100 bg-light">
         <AppHeader />
         <div class="body flex-grow-1 px-3">
@@ -32,9 +32,16 @@
       AppSidebar,
       CContainer,
     },
-    mounted() {
-      console.log('Ta Component mounted.')
-    },
+    async created() {
+      console.log('created')
+      await this.$store.dispatch('user').then(() => {
+        Echo.private(`Admin`).listen('AdminUpdated', (e) => {
+          console.log(e.user);
+        });
+      }).catch((error) => {
+        console.log(error)
+      })
+    }
   }
 </script>
   

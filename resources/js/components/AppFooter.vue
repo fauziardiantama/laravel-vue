@@ -1,9 +1,9 @@
 <template>
   <CFooter>
     <div>
-      <a href="https://coreui.io" target="_blank">CoreUI</a>
+      <a href="https://portald3ti.vokasi.uns.ac.id/" target="_blank">KMM-TA</a>
       <span class="ms-1"
-        >&copy; {{ new Date().getFullYear() }} creativeLabs.</span
+        >&copy; {{ new Date().getFullYear() }} D3 Teknik Informatika.</span
       >
     </div>
     <div class="ms-auto">

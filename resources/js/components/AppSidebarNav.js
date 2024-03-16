@@ -99,7 +99,7 @@ const AppSidebarNav = defineComponent({
                   resolveComponent(item.component),
                   {
                     active: props.isActive,
-                    href: props.href,
+                    href: 'javascript:void(0)',
                     onClick: () => props.navigate(),
                     disabled: (item.disabled || item.needactivation && (store.state.status === 0 || store.state.status === null))
                   },

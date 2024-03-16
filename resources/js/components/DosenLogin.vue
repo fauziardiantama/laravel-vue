@@ -1,9 +1,10 @@
   <template>
-    <Login @login-attempt="login"  :mahasiswa="false" :for="'dosen'" :form_validation="form_validation"/>
+    <Login @login-attempt="login"  :mahasiswa="false" :userType="'dosen'" :form_validation="form_validation"/>
   </template>
   
   <script>
    import Login from '@/components/Login.vue'
+
     export default {
         name: 'DosenLogin',
         components: {
@@ -24,19 +25,16 @@
             }
         },
         mounted() {
-        console.log('Dosen Login Component mounted.')
+            console.log('Dosen Login Component mounted.')
         },
         methods: {
             login(credential) {
                 console.log('Email2 : '+credential.email)
-                this.$store.dispatch('dosenLogin', {
-                    credentials: {
-                        email: credential.email,
-                        password: credential.password
-                    },
-                    router: () => this.$router.push({ name: 'DosenKmm' })
-                }).then(response => {
+                this.$store.dispatch('showLoadingAlert');
+                this.$store.dispatch('dosenLogin', credential)
+                .then(response => {
                     console.log(response);
+                    this.$store.dispatch('showSuccessAlert', 'Login Berhasil');
                     this.form_validation = {
                         email: {
                             invalid: false,
@@ -47,6 +45,7 @@
                             feedback: ''
                         }
                     };
+                    this.$router.push({ name: 'Landing' });
                 }).catch(e => {
                     if (e.response.status === 422) {
                         this.form_validation = {
@@ -59,6 +58,15 @@
                                 feedback: e.response.data.errors.password ? e.response.data.errors.password.join(' & ') : ""
                             }
                         }
+                        this.$store.dispatch('showErrorAlert', {
+                            title: 'Login Gagal',
+                            message: e.response.data.message
+                        });
+                    } else {
+                        this.$store.dispatch('showErrorAlert', {
+                            title: `Error ${e.response.status}`,
+                            message: e.response.data.message || e.response.data
+                        });
                     }
                 });
             }

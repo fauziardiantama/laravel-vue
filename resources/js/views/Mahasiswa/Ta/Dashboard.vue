@@ -2,7 +2,7 @@
     <div>
       <CRow>
         <CCol :md="12">
-          <CCard v-if="!havedokumen&&!actived" class="mb-4">
+          <CCard v-if="!havedokumen&&(isNotActived||isRejected)" class="mb-4">
             <CCardHeader component="h5" class="text-danger"><font-awesome-icon :icon="['fas', 'exclamation-triangle']" /> Pemberitahuan</CCardHeader>
             <CCardBody>
               <CCardTitle class="text-danger">Akun belum diaktifkan oleh admin</CCardTitle>
@@ -16,7 +16,7 @@
                             { label: 'Kartu Rencana Studi (KRS)', value: 'KRS' },
                             { label: 'Kartu Mahasiswa', value: 'KartuMahasiswa' }
                         ]"
-                        v-model="type"
+                        v-model="form.type"
                         label="Tipe"
                         :feedback="form_validation.type.feedback"
                         :invalid="form_validation.type.invalid"
@@ -41,18 +41,21 @@
               </CForm>
             </CCardBody>
           </CCard>
-          <CCard v-if="havedokumen&&!actived" class="mb-4">
-            <CCardHeader component="h5" class="text-warning"><font-awesome-icon :icon="['fas', 'check-circle']" /> Pemberitahuan</CCardHeader>
+          <CCard v-if="havedokumen&&(isNotActived||isRejected)" class="mb-4">
+            <CCardHeader v-if="isNotActived" component="h5" class="text-warning"><font-awesome-icon :icon="['fas', 'check-circle']" /> Pemberitahuan</CCardHeader>
+            <CCardHeader v-else component="h5" class="text-danger"><font-awesome-icon :icon="['fas', 'exclamation-triangle']" /> Pemberitahuan</CCardHeader>
             <CCardBody>
-              <CCardTitle class="text-warning">Akun menunggu diaktifkan oleh admin</CCardTitle>
-              <CCardText>Terima kasih telah mengupload Kartu Rencana Studi (KRS) paling baru atau Kartu Mahasiswa. Admin akan segera memverifikasi file yang telah diupload. <a href="#" @click="openEditModal()">Ajukan pembaruan dokumen?</a></CCardText>
+              <CCardTitle v-if="isNotActived" class="text-warning">Akun menunggu diaktifkan oleh admin</CCardTitle>
+              <CCardTitle v-else class="text-danger">Akun ditolak oleh admin</CCardTitle>
+              <CCardText v-if="isNotActived">Terima kasih telah mengupload Kartu Rencana Studi (KRS) paling baru atau Kartu Mahasiswa. Admin akan segera memverifikasi file yang telah diupload. <a href="#" @click="openEditModal">Ajukan pembaruan dokumen?</a></CCardText>
+              <CCardText v-else>Admin belum dapat mengaktifkan akun anda, mohon mengupload ulang Kartu Rencana Studi (KRS) paling baru atau Kartu Mahasiswa. Jika anda merasa ada kesalahan, silahkan hubungi segera. <a href="#" @click="openEditModal">Ajukan pembaruan dokumen?</a></CCardText>
               <div>
                 Dokumen anda :
                 <a :href="dokumen.link" target="_blank" v-for="dokumen in dokumens" class="dokumen-link"><font-awesome-icon :icon="['far', 'file']" /> {{ dokumen.nama }}</a>
               </div>
             </CCardBody>
           </CCard>
-          <div v-if="havedokumen&&actived">
+          <div v-if="havedokumen&&isActived">
             <CCard class="mb-4">
                 <CCardHeader component="h5" class="text-success"><font-awesome-icon :icon="['fas', 'check-circle']" /> Pemberitahuan</CCardHeader>
                 <CCardBody>
@@ -67,7 +70,7 @@
             <CCard>
                 <CCardHeader component="h5"><font-awesome-icon :icon="['fas', 'file']" /> Proposal TA</CCardHeader>
                 <CCardBody>
-                    <CCardTitle v-if="!proposalexist">Silahkan upload proposal TA</CCardTitle>
+                    <CCardTitle v-if="!haveproposal">Silahkan upload proposal TA</CCardTitle>
                     <CCardTitle v-else>Proposal TA sudah diupload</CCardTitle>
                     <CCardText><RouterLink :to="{ name: 'MahasiswaTaProposal' }">halaman Proposal TA</RouterLink></CCardText>
                 </CCardBody>
@@ -75,7 +78,7 @@
           </div>
         </CCol>
       </CRow>
-        <CModal v-if="havedokumen&&!actived" backdrop="static" :visible="showEditModal" @close="closeModal">
+        <CModal v-if="havedokumen&&(isNotActived||isRejected)" backdrop="static" :visible="showEditModal" @close="closeModal">
             <CModalHeader>
             <CModalTitle>Update atau tambah dokumen registrasi</CModalTitle>
             </CModalHeader>
@@ -89,7 +92,7 @@
                                 { label: 'Kartu Rencana Studi (KRS)', value: 'KRS' },
                                 { label: 'Kartu Mahasiswa', value: 'KartuMahasiswa' }
                             ]"
-                            v-model="type"
+                            v-model="form.type"
                             label="Tipe"
                             :feedback="form_validation.type.feedback"
                             :invalid="form_validation.type.invalid"
@@ -102,10 +105,11 @@
                         label="File"
                         accept="application/pdf"
                         @change="handleFileUpload"
-                        placeholder="KRS/Kartu Mahasiswa (.pdf)" required
+                        placeholder="KRS/Kartu Mahasiswa (.pdf)"
                         :feedback="form_validation.file.feedback"
                         :invalid="form_validation.file.invalid"
                         id="fileedit"
+                        required
                     />
                     </CCol>
                 </CForm>
@@ -143,8 +147,10 @@
     components: {},
     data() {
       return {
-        file: null,
-        type: null,
+        form: {
+            type: '',
+            file: null
+        },
         form_validation: {
             type: {
                 invalid: false,
@@ -156,141 +162,104 @@
             }
         },
         havedokumen: false,
+        haveproposal: false,
         dokumens: null,
-        user: null,
+        user: {
+            nim: '',
+            status: 0
+        },
         showEditModal: false,
-        actived: false,
-        proposalexist: false
       }
     },
-    async created() {
-        try {
-            const user = await axios.get(`${window.location.origin}/api/user`);
-            this.user = user.data;
-            this.actived = user.data.user.status > 0;
-            const response = await axios.get(`${window.location.origin}/api/ta/dokumen_registrasi/`+user.data.user.nim);
-            this.havedokumen = !response.data.isEmpty;
-            
-            axios.get(`${window.location.origin}/api/ta/proposal_ta`).then(response => {
-                this.proposalexist = true;
-            }).catch(e => {
-                if (e.response.status === 404) {
-                    this.proposalexist = false;
-                } else {
-                    console.log('Error: ', e);
-                    this.showErrorAlert(`Error ${e.response.status}`, e.response.data.message ?? e.response.data);
-                }
-            });
-            if (this.havedokumen) {
-                this.dokumens = [];
-                if (response.data.data.krs != null) {
-                    this.dokumens.push({
-                        nama: 'KRS',
-                        link: window.location.origin + '/mahasiswa/dokumen-registrasi/krs/' + response.data.data.krs
-                    });
-                }
-                if (response.data.data.kartu_mahasiswa != null) {
-                    this.dokumens.push({
-                        nama: 'Kartu Mahasiswa',
-                        link: window.location.origin + '/mahasiswa/dokumen-registrasi/kartu-mahasiswa/' + response.data.data.kartu_mahasiswa
-                    });
-                }
-                if (response.data.data.transkrip != null) {
-                    this.dokumens.push({
-                        nama: 'Transkrip',
-                        link: window.location.origin + '/mahasiswa/dokumen-registrasi/transkrip/' + response.data.data.transkrip
-                    });
-                }
-                if (response.data.data.bukti_seminar != null) {
-                    this.dokumens.push({
-                        nama: 'Bukti Seminar',
-                        link: window.location.origin + '/mahasiswa/dokumen-registrasi/bukti-seminar/' + response.data.data.bukti_seminar
-                    });
+    computed: {
+        statusUser() {
+            return this.user.status;
+        },
+        isActived() {
+            return this.user.status > 0;
+        },
+        isNotActived() {
+            return this.user.status == 0;
+        },
+        isRejected() {
+            return this.user.status < 0;
+        },
+    },
+    watch: {
+        '$store.state.user': {
+            immediate: true,
+            handler(user) {
+                if (user != null) {
+                    this.user = user;
+                    this.getDokumenRegistration();
+                    if (this.isActived) {
+                        this.getProposal();
+                    }
+                    this.echo();
                 }
             }
-        } catch (error) {
-            console.log('Error:', error);
         }
     },
-    mounted() {
-        console.log(`this use is have dokumen (${this.havedokumen}) and actived (${this.actived})`)
-        console.log('Component mounted.');
-        Echo.channel('dokumen-registration').listen('DokumenRegistration', (e) => {
-            if (this.user.token.id == e.token.id) {
+    methods: {
+        getDokumenRegistration() {
+            axios.get(`${window.location.origin}/api/ta/dokumen_registrasi/`+this.user.nim).then(response => {
+                this.havedokumen = !response.data.isEmpty;
+                if (this.havedokumen) {
+                    this.fillDokumen(response.data.data);
+                }
+            }).catch(e => {
+                console.log('Error: ', e);
+            });
+        },
+        getProposal() {
+            axios.get(`${window.location.origin}/api/ta/proposal_ta`).then(response => {
+                this.haveproposal = true;
+            }).catch(e => {
+                if (e.response.status === 404) {
+                    this.haveproposal = false;
+                } else {
+                    console.log('Error: ', e);
+                    this.$store.dispatch('showErrorAlert', { title: `Error ${e.response.status}`, message: `${e.response.data.message ?? e.response.data}`});
+                }
+            }); 
+        },
+        echo() {
+            console.log('Echoing...');
+            Echo.private(`User.${this.user.nim}`).listen('DokReg', (e) => {
                 this.havedokumen = !e.isEmpty;
                 if (this.havedokumen) {
-                    this.dokumens = [];
-                    if (e.item.krs != null) {
-                        this.dokumens.push({
-                            nama: 'KRS',
-                            link: window.location.origin + '/mahasiswa/dokumen-registrasi/krs/' + e.item.krs
-                        });
-                    }
-                    if (e.item.kartu_mahasiswa != null) {
-                        this.dokumens.push({
-                            nama: 'Kartu Mahasiswa',
-                            link: window.location.origin + '/mahasiswa/dokumen-registrasi/kartu-mahasiswa/' + e.item.kartu_mahasiswa
-                        });
-                    }
-                    if (e.item.transkrip != null) {
-                        this.dokumens.push({
-                            nama: 'Transkrip',
-                            link: window.location.origin + '/mahasiswa/dokumen-registrasi/transkrip/' + e.item.transkrip
-                        });
-                    }
-                    if (e.item.bukti_seminar != null) {
-                        this.dokumens.push({
-                            nama: 'Bukti Seminar',
-                            link: window.location.origin + '/mahasiswa/dokumen-registrasi/bukti-seminar/' + e.item.bukti_seminar
-                        });
-                    }
+                    this.fillDokumen(e.item);
                 }
-                console.log('Token matched');
-            } else {
-                console.log('Token not matched');
-            }
-        });
-        Echo.channel('proposal-ta').listen('ProposalUpdated', (e) => {
-            if (this.user.token.id == e.token.id) {
-                this.proposalexist = !e.isEmpty;
-                console.log('Token matched');
-            } else {
-                console.log('Token not matched');
-            }
-            console.log(e);
-        });
-    },
-    methods: {
-        tes() {
-            console.log('tes');
+            }).listen('Prop', (e) => {
+                this.haveproposal = !e.isEmpty;
+            });
         },
-        openEditModal(item) {
+        openEditModal() {
             this.showEditModal = true
         },
         closeModal() {
-            console.log('awal');
-            this.file = null;
-            this.type = '';
-            console.log('tengah');
-            //check if there's element with id fileedit
-            if (document.getElementById('file')) {
-                document.getElementById('file').value = '';
+            this.form = {
+                type: '',
+                file: ''
             }
-            if (document.getElementById('fileedit')) {
-                document.getElementById('fileedit').value = '';
-            }
+            this.emptyFile('file');
+            this.emptyFile('fileedit');
             this.showEditModal = false;
-            console.log('akhir');
         },
         handleFileUpload( event ){
-            this.file = event.target.files[0];
+            this.form.file = event.target.files[0];
+        },
+        emptyFile(file) {
+            if (document.getElementById(file)) {
+                document.getElementById(file).value = '';
+            }
         },
         submitFile(){
             let formData = new FormData();
-            formData.append('file', this.file);
-            formData.append('type', this.type);
+            formData.append('file', this.form.file);
+            formData.append('type', this.form.type);
 
-            this.showLoadingAlert();
+            this.$store.dispatch('showLoadingAlert');
 
             axios.post(`${window.location.origin}/api/ta/dokumen_registrasi`,
             formData,
@@ -301,10 +270,8 @@
             })
             .then(response => {
                 console.log(response);
-                this.showSuccessAlert('Berhasil mengupload file!');
-                console.log('before close modal')
+                this.$store.dispatch('showSuccessAlert', 'Berhasil mengupload file!');
                 this.closeModal();
-                console.log('after close modal')
                 this.form_validation = {
                     type: {
                         invalid: false,
@@ -315,13 +282,9 @@
                         feedback: ''
                     }
                 }
-                console.log(this.form_validation);
             })
             .catch(e => {
                 if (e.response.status === 422) {
-                    // Handle login errors (e.g., display error messages)
-                    console.log('Error:', e);
-                    // Provide feedback to the user
                     this.form_validation = {
                         type: {
                             invalid: !!e.response.data.errors.type,
@@ -332,63 +295,73 @@
                             feedback: e.response.data.errors.file ? e.response.data.errors.file.join(' & ') : ""
                         }
                     }
-                    this.showErrorAlert('Gagal mengupload file!', e.response.data.message);
+                    this.$store.dispatch('showErrorAlert', {
+                        title: 'Gagal mengupload file!',
+                        message: e.response.data.message
+                    });
                 } else {
                     console.log('Error: ', e);
-                    this.showErrorAlert(`Error ${e.response.status}`, e.response.data.message ?? e.response.data);
+                    this.$store.dispatch('showErrorAlert', {
+                        title: `Error ${e.response.status}`,
+                        message: e.response.data.message ?? e.response.data
+                    });
                 }
             });
         },
         deleteFile() {
             Swal.fire({
-                title: `Hapus dokumen ${this.type ?? '(belum memilih tipe dokumen)'} ?`,
+                title: `Hapus dokumen ${this.form.type != '' ? this.form.type : '(belum memilih tipe dokumen)'} ?`,
                 showCancelButton: true,
-                confirmButtonText: "Save"
+                confirmButtonText: "Delete"
             }).then((result) => {
-                /* Read more about isConfirmed, isDenied below */
                 if (result.isConfirmed) {
-                    this.showLoadingAlert();
-                    axios.put(`${window.location.origin}/api/ta/dokumen_registrasi/${this.user.user.nim}`, {
-                        type: this.type
+                    this.$store.dispatch('showLoadingAlert');
+                    axios.put(`${window.location.origin}/api/ta/dokumen_registrasi/${this.user.nim}`, {
+                        type: this.form.type
                     })
                     .then(response => {
                         console.log(response);
-                        this.showSuccessAlert('Berhasil menghapus file!');
+                        this.$store.dispatch('showSuccessAlert', 'Berhasil menghapus file!');
                         this.closeModal();
                     })
                     .catch(e => {
                         console.log('Error: ', e);
-                        this.showErrorAlert(`Error ${e.response.status}`, e.response.data.message ?? e.response.data);
+                        this.$store.dispatch('showErrorAlert', {
+                            title: `Error ${e.response.status}`,
+                            message: e.response.data.message ?? e.response.data
+                        });
                     });
                 }
             });
             
         },
-        showLoadingAlert() {
-            Swal.fire({
-                title: 'Loading...',
-                allowOutsideClick: false,
-                showConfirmButton: false,
-                didOpen: () => Swal.showLoading()
-            });
-        },
-        showSuccessAlert(message) {
-            Swal.fire({
-                toast: true,
-                position: "top-end",
-                showConfirmButton: false,
-                timer: 3000,
-                icon: "success",
-                title: message
-            });
-        },
-        showErrorAlert(message, error) {
-            Swal.fire({
-                title: error,
-                text: message,
-                icon: 'error'
-            });
-        },
+        fillDokumen(data) {
+              this.dokumens = [];
+              if (data.krs != null) {
+                  this.dokumens.push({
+                      nama: 'KRS',
+                      link: `${window.location.origin}/mahasiswa/dokumen-registrasi/krs/${data.token}/${data.krs}`
+                  });
+              }
+              if (data.kartu_mahasiswa != null) {
+                  this.dokumens.push({
+                      nama: 'Kartu Mahasiswa',
+                      link: `${window.location.origin}/mahasiswa/dokumen-registrasi/kartu-mahasiswa/${data.token}/${data.kartu_mahasiswa}`
+                  });
+              }
+              if (data.transkrip != null) {
+                  this.dokumens.push({
+                      nama: 'Transkrip',
+                      link: `${window.location.origin}/mahasiswa/dokumen-registrasi/transkrip/${data.token}/${data.transkrip}`
+                  });
+              }
+              if (data.bukti_seminar != null) {
+                  this.dokumens.push({
+                      nama: 'Bukti Seminar',
+                      link: `${window.location.origin}/mahasiswa/dokumen-registrasi/bukti-seminar/${data.token}/${data.bukti_seminar}`
+                  });
+              }
+        }
     }
   }
   </script>

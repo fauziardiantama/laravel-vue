@@ -1,10 +1,9 @@
   <template>
-    <Login @login-attempt="login" :mahasiswa="true" :for="'mahasiswa'" :form_validation="form_validation"/>
+    <Login @login-attempt="login" :mahasiswa="true" :userType="'mahasiswa'" :form_validation="form_validation"/>
   </template>
   
   <script>
    import Login from '@/components/Login.vue'
-   import Swal from 'sweetalert2';
    
     export default {
         name: 'MahasiswaLogin',
@@ -22,42 +21,33 @@
                         invalid: false,
                         feedback: ''
                     }
-                }
+                },
+                redirect: 'Landing'
             }
         },
         mounted() {
             console.log('Mahasiswa Login Component mounted.');
             if (this.$route.query.status == "verified") {
-                Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    showConfirmButton: false,
-                    timer: 3000,
-                    icon: "success",
-                    title: "Email telah diverifikasi! Silahkan login."
-                });
+                this.$store.dispatch('showSuccessAlert', 'Email berhasil diverifikasi! Silahkan login.');
             } else if (this.$route.query.status == "invalid") {
-                Swal.fire({
-                    toast: true,
-                    position: "top-end",
-                    showConfirmButton: false,
-                    timer: 3000,
-                    icon: "error",
-                    title: "Gagal verifikasi email! Akun tidak ditemukan atau token tidak valid."
+                this.$store.dispatch('showErrorAlert', {
+                    title: 'Verifikasi Email Gagal',
+                    text: 'Token verifikasi tidak valid atau sudah kadaluarsa. Silahkan coba lagi.'
                 });
             }
+            if (this.$route.query.redirect) {
+                this.redirect = this.$route.query.redirect;
+            }
+            console.log('Redirect : '+this.redirect);
         },
         methods: {
             login(credential) {
                 console.log('Email2 : '+credential.email)
-                this.$store.dispatch('mahasiswaLogin', {
-                    credentials: {
-                        email: credential.email,
-                        password: credential.password
-                    },
-                    router: () => this.$router.push({ name: 'MahasiswaTa' })
-                }).then(response => {
+                this.$store.dispatch('showLoadingAlert');
+                this.$store.dispatch('mahasiswaLogin', credential)
+                .then(response => {
                     console.log(response);
+                    this.$store.dispatch('showSuccessAlert', 'Login Berhasil');
                     this.form_validation = {
                         email: {
                             invalid: false,
@@ -68,6 +58,7 @@
                             feedback: ''
                         }
                     };
+                    this.$router.push({ name: this.redirect });
                 }).catch(e => {
                     if (e.response.status === 422) {
                         this.form_validation = {
@@ -80,6 +71,15 @@
                                 feedback: e.response.data.errors.password ? e.response.data.errors.password.join(' & ') : ""
                             }
                         }
+                        this.$store.dispatch('showErrorAlert', {
+                            title: 'Login Gagal',
+                            message: e.response.data.message
+                        });
+                    } else {
+                        this.$store.dispatch('showErrorAlert', {
+                            title: `Error ${e.response.status}`,
+                            message: e.response.data.message || e.response.data
+                        });
                     }
                 });
             }

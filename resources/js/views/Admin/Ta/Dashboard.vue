@@ -23,10 +23,11 @@
             <p class="col-7">Daftar Mahasiswa</p>
             <!-- Make pagination -->
             <div class="col-5 mt-2 text-right right">
-              <pagination  :pagination="mahasiswas"
-                     @paginate="getMahasiswa()"
-                     :offset="4">
-            </pagination>
+              <pagination
+                :pagination="mahasiswas"
+                @paginate="getMahasiswa()"
+                :offset="4">
+              </pagination>
             </div>
           </CCardHeader>
           <CCardBody>
@@ -141,7 +142,7 @@
     <CModalBody>
       <CRow>
         <CCol :md="4">
-          <CLabel>NIM</CLabel>
+          <label>NIM</label>
         </CCol>
         <CCol :md="8">
           <p>{{ activeProposal.nim }}</p>
@@ -149,7 +150,7 @@
       </CRow>
       <CRow>
         <CCol :md="4">
-          <CLabel>NIM</CLabel>
+          <label>NIM</label>
         </CCol>
         <CCol :md="8">
           <p>{{ activeProposal.mahasiswa.nama }}</p>
@@ -157,7 +158,7 @@
       </CRow>
       <CRow>
         <CCol :md="4">
-          <CLabel>Judul Proposal</CLabel>
+          <label>Judul Proposal</label>
         </CCol>
         <CCol :md="8">
           <p>{{ activeProposal.judul_proposal }}</p>
@@ -165,7 +166,7 @@
       </CRow>
       <CRow>
         <CCol :md="4">
-          <CLabel>Tahun</CLabel>
+          <label>Tahun</label>
         </CCol>
         <CCol :md="8">
           <p>{{ activeProposal.tahun }}</p>
@@ -173,7 +174,7 @@
       </CRow>
       <CRow>
         <CCol :md="4">
-          <CLabel>Semester</CLabel>
+          <label>Semester</label>
         </CCol>
         <CCol :md="8">
           <p>{{ activeProposal.semester == 1 ? 'Ganjil' : 'Genap' }}</p>
@@ -181,7 +182,7 @@
       </CRow>
       <CRow>
         <CCol :md="4">
-          <CLabel>Status proposal</CLabel>
+          <label>Status proposal</label>
         </CCol>
         <CCol :md="8">
           <p><CBadge v-if="activeProposal.status_proposal > 0" color="success">disetujui</CBadge><CBadge v-if="activeProposal.status_proposal < 0" color="danger">Ditolak</CBadge><CBadge v-if="activeProposal.status_proposal == 0" color="warning">Menunggu</CBadge></p>
@@ -189,10 +190,10 @@
       </CRow>
       <CRow>
         <CCol :md="4">
-          <CLabel>Dokumen registrasi</CLabel>
+          <label>Dokumen registrasi</label>
         </CCol>
         <CCol :md="8">
-          <a :href="`${window.location.origin}/mahasiswa/ta/proposal-ta/${activeProposal.file_proposal}`" target="_blank" class="dokumen-link"><font-awesome-icon :icon="['far', 'file']" /> {{ activeProposal.judul_proposal }}</a>
+          <a :href="`${window.location.origin}/mahasiswa/ta/proposal-ta/${activeProposal.token}/${activeProposal.file_proposal}`" target="_blank" class="dokumen-link"><font-awesome-icon :icon="['far', 'file']" /> {{ activeProposal.judul_proposal }}</a>
         </CCol>
       </CRow>
     </CModalBody>
@@ -209,7 +210,7 @@
     <CModalBody>
       <CRow>
         <CCol :md="4">
-          <CLabel>NIM</CLabel>
+          <label>NIM</label>
         </CCol>
         <CCol :md="8">
           <p>{{ activeMahasiswa.nim }}</p>
@@ -217,7 +218,7 @@
       </CRow>
       <CRow>
         <CCol :md="4">
-          <CLabel>Nama</CLabel>
+          <label>Nama</label>
         </CCol>
         <CCol :md="8">
           <p>{{ activeMahasiswa.nama }}</p>
@@ -225,7 +226,7 @@
       </CRow>
       <CRow>
         <CCol :md="4">
-          <CLabel>Email</CLabel>
+          <label>Email</label>
         </CCol>
         <CCol :md="8">
           <p>{{ activeMahasiswa.email }} <CBadge v-if="activeMahasiswa.konfirmasi < 1" color="danger">Belum dikonfirmasi</CBadge><CBadge v-if="activeMahasiswa.konfirmasi > 0" color="success">Sudah dikonfirmasi</CBadge></p>
@@ -233,7 +234,7 @@
       </CRow>
       <CRow>
         <CCol :md="4">
-          <CLabel>No. Telp</CLabel>
+          <label>No. Telp</label>
         </CCol>
         <CCol :md="8">
           <p>{{ activeMahasiswa.no_telp }}</p>
@@ -241,7 +242,7 @@
       </CRow>
       <CRow>
         <CCol :md="4">
-          <CLabel>Status</CLabel>
+          <label>Status</label>
         </CCol>
         <CCol :md="8">
           <p><CBadge v-if="activeMahasiswa.status > 0" color="success">disetujui</CBadge><CBadge v-if="activeMahasiswa.status < 0" color="danger">Ditolak</CBadge><CBadge v-if="activeMahasiswa.status == 0" color="warning">Menunggu</CBadge></p>
@@ -249,7 +250,7 @@
       </CRow>
       <CRow>
         <CCol :md="4">
-          <CLabel>Dokumen registrasi</CLabel>
+          <label>Dokumen registrasi</label>
         </CCol>
         <CCol v-if="activeMahasiswa.dokumens.length > 0" :md="8">
           <a :href="dokumen.link" target="_blank" v-for="dokumen in activeMahasiswa.dokumens" class="dokumen-link"><font-awesome-icon :icon="['far', 'file']" /> {{ dokumen.nama }}</a>
@@ -295,15 +296,14 @@ export default {
     return {
       dosenCount: 0,
       mahasiswaCount: 0,
-      mahasiswaVerifCount: 0,
       mahasiswas: {
-            total: 0,
-            per_page: 2,
-            from: 1,
-            to: 0,
-            current_page: 1,
-            data: []
-        },
+        total: 0,
+        per_page: 2,
+        from: 1,
+        to: 0,
+        current_page: 1,
+        data: []
+      },
       offset: 4,
       mahasiswastatus : 'Mengambil items',
       showDetailMahasiswa: false,
@@ -318,19 +318,20 @@ export default {
         dokumens: []
       },
       proposals: {
-            total: 0,
-            per_page: 2,
-            from: 1,
-            to: 0,
-            current_page: 1,
-            data: []
-        },
+        total: 0,
+        per_page: 2,
+        from: 1,
+        to: 0,
+        current_page: 1,
+        data: []
+      },
       proposalstatus : 'Mengambil items',
       showDetailProposal: false,
       activeProposal: {
         id: 0,
         nim: '',
         judul_proposal: '',
+        token: '',
         file_proposal: '',
         tahun: '',
         semester_id: null,
@@ -343,7 +344,6 @@ export default {
     }
   },
   async created() {
-    //like constructor
     this.getMahasiswa();
     this.getProposal();
     try {
@@ -356,24 +356,16 @@ export default {
     }
   },
   mounted() {
-    //like update()
-    console.log('Dashboard component mounted.');
-    console.log('TES' + import.meta.env.APP_URL)
-    Echo.channel('items').listen('ItemAdded', (e) => {
+    Echo.private('Admin')
+    .listen('Mhs', (e) => {
+      this.getMahasiswa();
+    }).listen('DosenUpdated', (e) => {
       console.log(e);
-      this.items.push(e.item);
-    }).listen('ItemUpdated', (e) => {
-      console.log(e);
-      this.items = this.items.map(i => i.id === e.item.id ? e.item : i);
-    }).listen('ItemDeleted', (e) => {
-      console.log(e);
-      this.items = this.items.filter(i => i.id !== e.id);
+    }).listen('Prop', (e) => {
+      this.getProposal();
     });
   },
   methods: {
-    tes() {
-      console.log('tes');
-    },
     getMahasiswa() {
       axios.get(`${window.location.origin}/api/ta/mahasiswa?page=${this.mahasiswas.current_page}`)
       .then(response => {
@@ -385,39 +377,31 @@ export default {
       });
     },
     openDetailMahasiswa(item) {
-      this.activeMahasiswa = {
-        nim: item.nim,
-        nama: item.nama,
-        email: item.email,
-        no_telp: item.no_telp,
-        status: item.status,
-        konfirmasi: item.konfirmasi,
-        dokumens: []
-      }
+      this.fillActiveMahasiswa(item);
       axios.get(`${window.location.origin}/api/ta/dokumen_registrasi/${item.nim}`)
       .then(response => {
-        if (response.data.data.krs != null) {
+          if (response.data.data.krs != null) {
             this.activeMahasiswa.dokumens.push({
               nama: 'KRS',
-              link: window.location.origin + '/mahasiswa/dokumen-registrasi/krs/' + response.data.data.krs
+              link:  `${window.location.origin}/mahasiswa/dokumen-registrasi/krs/${response.data.data.token}/${response.data.data.krs}`
             });
           }
           if (response.data.data.kartu_mahasiswa != null) {
             this.activeMahasiswa.dokumens.push({
               nama: 'Kartu Mahasiswa',
-              link: window.location.origin + '/mahasiswa/dokumen-registrasi/kartu-mahasiswa/' + response.data.data.kartu_mahasiswa
+              link: `${window.location.origin}/mahasiswa/dokumen-registrasi/kartu-mahasiswa/${response.data.data.token}/${response.data.data.kartu_mahasiswa}`
             });
           }
           if (response.data.data.transkrip != null) {
             this.activeMahasiswa.dokumens.push({
               nama: 'Transkrip',
-              link: window.location.origin + '/mahasiswa/dokumen-registrasi/transkrip/' + response.data.data.transkrip
+              link: `${window.location.origin}/mahasiswa/dokeumen-registrasi/transkrip/${response.data.data.token}/${response.data.data.transkrip}`
             });
           }
           if (response.data.data.bukti_seminar != null) {
             this.activeMahasiswa.dokumens.push({
               nama: 'Bukti Seminar',
-              link: window.location.origin + '/mahasiswa/dokumen-registrasi/bukti-seminar/' + response.data.data.bukti_seminar
+              link: `${window.location.origin}/mahasiswa/dokumen-registrasi/bukti-seminar/${response.data.data.token}/${response.data.data.bukti_seminar}`
             });
           }
       })
@@ -431,16 +415,7 @@ export default {
     },
     closeMahasiswa() {
       this.showDetailMahasiswa = false;
-      this.activeMahasiswa = {
-        id : 0,
-        nim: '',
-        nama: '',
-        email: '',
-        no_telp: '',
-        status: '',
-        konfirmasi: '',
-        dokumen_registrasi: []
-      }
+      this.emptyActiveMahasiswa();
     },
     getProposal() {
       axios.get(`${window.location.origin}/api/ta/proposal_ta?page=${this.proposals.current_page}`)
@@ -458,6 +433,7 @@ export default {
         judul_proposal: item.judul_proposal,
         tahun: item.tahun,
         semester_id: item.semester_id,
+        token: item.token,
         file_proposal: item.file_proposal,
         status_proposal: item.status_proposal,
         mahasiswa: {
@@ -472,6 +448,7 @@ export default {
       this.activeProposal = {
         nim: '',
         judul_proposal: '',
+        token: '',
         file_proposal: '',
         tahun: '',
         semester_id: null,
@@ -483,6 +460,29 @@ export default {
         }
       }
     },
+    fillActiveMahasiswa(item){
+      this.activeMahasiswa = {
+        nim: item.nim,
+        nama: item.nama,
+        email: item.email,
+        no_telp: item.no_telp,
+        status: item.status,
+        konfirmasi: item.konfirmasi,
+        dokumens: []
+      }
+    },
+    emptyActiveMahasiswa(){
+      this.activeMahasiswa = {
+        id : 0,
+        nim: '',
+        nama: '',
+        email: '',
+        no_telp: '',
+        status: '',
+        konfirmasi: '',
+        dokumen_registrasi: []
+      }
+    }
   }
 }
 </script>

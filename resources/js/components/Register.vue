@@ -51,7 +51,7 @@
                       :invalid="form_validation.no_telp.invalid"
                       required/>
                   </CInputGroup>
-                  <CInputGroup :class="!visible ? 'mb-3' : ''">
+                  <CInputGroup :class="!hint ? 'mb-3' : ''">
                     <CInputGroupText>
                       <CIcon icon="cil-lock-locked" />
                     </CInputGroupText>
@@ -68,7 +68,7 @@
                       </CInputGroupText>
                       <div class="invalid-feedback">{{ form_validation.password.feedback }}</div>
                   </CInputGroup>
-                  <CCollapse :visible="visible">
+                  <CCollapse :visible="hint">
                     <CCard class="mb-3">
                       <CCardBody>
                         password harus memiliki minimal satu huruf kapital, huruf kecil, angka, dan simbol. panjang minimal 8 karakter.
@@ -144,15 +144,14 @@
             feedback: ''
           }
         },
-        visible: false,
         showPassword: false,
         showConfirmationPassword: false
       }
     },
-    watch: {
-        'form.password'(newValue) {
-            this.visible = newValue.trim().length > 0;
-        },
+    computed: {
+      hint() {
+        return this.form.password.trim().length > 0;
+      }
     },
     mounted() {
       console.log('Register Component mounted.')
@@ -201,7 +200,7 @@
             })
             .catch(e => {
               if (e.response.status === 422) {
-                this.showErrorAlert(e.response.data.message, e);
+                this.showErrorAlert(e.response.data.message, 'Failed to register!');
                 this.form_validation = {
                   nim: {
                     invalid: !!e.response.data.errors.nim,
@@ -228,7 +227,7 @@
                 this.form.password_confirmation = '';
               } else {
                 console.log(e);
-                this.showErrorAlert('Failed to register!', e);
+                this.showErrorAlert(e.response.data.message ?? e.response.data, `Error ${error.response.status}`);
               }
             });
         },
@@ -260,7 +259,7 @@
         },
         showErrorAlert(message, error) {
           Swal.fire({
-            title: `Error ${error.response.status}`,
+            title: error,
             text: message,
             icon: 'error'
           });

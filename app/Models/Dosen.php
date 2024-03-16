@@ -47,4 +47,19 @@ class Dosen extends Authenticatable
     {
         return $this->hasOne(AuthUser::class, 'id_dosen', 'id_dosen');
     }
+
+    public function topik()
+    {
+        return $this->belongsToMany(TopikKmm::class, 'dosen_topik', 'id_dosen', 'id_topik');
+    }
+
+    public function magang()
+    {
+        return $this->hasMany(Magang::class, 'id_dosen', 'id_dosen');
+    }
+
+    public function jadwalPropTA()
+    {
+        return $this->belongsToMany(JadwalPropTA::class, 'jadwal_proposal_ta_dosen', 'dosen_id', 'jadwal_proposal_ta_id');
+    }
 }

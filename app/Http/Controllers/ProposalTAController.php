@@ -4,10 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\ProposalTA;
 use App\Models\Mahasiswa;
-use App\Events\ProposalUpdated;
+use App\Events\Prop;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreProposalTA;
 use App\Http\Requests\UpdateProposalTA;
+use Illuminate\Support\Facades\Storage;
 
 class ProposalTAController extends Controller
 {
@@ -23,6 +24,9 @@ class ProposalTAController extends Controller
                     'message' => 'Proposal tidak ditemukan'
                 ],404);
             }
+            $proposal->token = bin2hex(random_bytes(32));
+            $proposal->token_expired = now()->addHours(2);
+            $proposal->save();
         } else {
             $proposal = ProposalTA::orderBy('tahun', 'asc')->with('mahasiswa')->paginate(10);
 			if ($proposal->isEmpty() == true) {
@@ -31,6 +35,20 @@ class ProposalTAController extends Controller
                 ],404);
             }
             
+        }
+        return response()->json([
+            'message' => 'Berhasil menampilkan proposal',
+            'data' => $proposal
+        ]);
+    }
+
+    public function indexAll()
+    {
+        $proposal = ProposalTA::orderBy('tahun', 'asc')->with('mahasiswa')->get();
+        if ($proposal->isEmpty() == true) {
+            return response()->json([
+                'message' => 'Proposal tidak ditemukan'
+            ],404);
         }
         return response()->json([
             'message' => 'Berhasil menampilkan proposal',
@@ -70,10 +88,13 @@ class ProposalTAController extends Controller
         $proposal->nim = $nim;
         $proposal->semester_id = $request->semester_id;
         $proposal->tahun = $request->tahun;
+        $proposal->token = bin2hex(random_bytes(32));
+        $proposal->token_expired = now()->addHours(2);
         if ($proposal->save()) {
-            $mahasiswa = Mahasiswa::where('nim', $nim)->first();
-            $proposal = ProposalTA::where('nim', $nim)->with('mahasiswa')->first();
-            event(new ProposalUpdated($mahasiswa, false, $proposal));
+            $proposal = ProposalTA::where('nim', $nim)->with('mahasiswa','semester','jadwalPropTa')->first();
+            event( new Prop("store", ["Admin","User.".$nim], false, $proposal));
+            // send #EVENT ProposalUpdated to Mahasiswa.nim dan Admin
+
             return response()->json([
                 'message' => 'Berhasil menambahkan proposal',
                 'data' => $proposal
@@ -90,13 +111,25 @@ class ProposalTAController extends Controller
     public function show($nim)
     {
         if (request()->user()->isMahasiswa()) {
-            $proposal = ProposalTA::where('nim', request()->user()->mahasiswa()->first()->nim)->with('mahasiswa')->first();
+            $proposal = ProposalTA::where('nim', request()->user()->mahasiswa()->first()->nim)->with('mahasiswa','semester','jadwalPropTa')->first();
+            if (!$proposal) {
+                return response()->json([
+                    'message' => 'Proposal tidak ditemukan'
+                ],404);
+            }
+            $proposal->token = bin2hex(random_bytes(32));
+            $proposal->token_expired = now()->addHours(2);
+            $proposal->save();
             return response()->json([
                 'message' => 'Berhasil menampilkan proposal',
                 'data' => $proposal
             ]);
         } else {
             $proposal = ProposalTA::where('nim', $nim)->with('mahasiswa')->first();
+            $proposal->token = bin2hex(random_bytes(32));
+            $proposal->token_expired = now()->addHours(2);
+            $proposal->save();
+            event( new Prop("update", ["Admin","User.".$nim], false, $proposal));
             return response()->json([
                 'message' => 'Berhasil menampilkan proposal',
                 'data' => $proposal
@@ -143,10 +176,12 @@ class ProposalTAController extends Controller
         }
         $proposal->semester_id = $request->semester_id ?? $proposal->semester_id;
         $proposal->tahun = $request->tahun ?? $proposal->tahun;
+        $proposal->token = bin2hex(random_bytes(32));
+        $proposal->token_expired = now()->addHours(2);
         $proposal->save();
-        $mahasiswa = Mahasiswa::where('nim', $nim)->first();
         $proposal = ProposalTA::where('nim', $nim)->with('mahasiswa')->first();
-        event(new ProposalUpdated($mahasiswa, false, $proposal));
+        event( new Prop("update", ["Admin","User.".$nim], false, $proposal));
+        //send #EVENT ProposalUpdated to Mahasiswa.nim dan Admin
         return response()->json([
             'message' => 'Berhasil mengubah proposal',
             'data' => $proposal
@@ -162,10 +197,12 @@ class ProposalTAController extends Controller
             ],404);
         }
         $proposal->status_proposal = 1;
+        $proposal->token = bin2hex(random_bytes(32));
+        $proposal->token_expired = now()->addHours(2);
         $proposal->save();
-        $mahasiswa = Mahasiswa::where('nim', $nim)->first();
         $proposal = ProposalTA::where('nim', $nim)->with('mahasiswa')->first();
-        event(new ProposalUpdated($mahasiswa->token(), false, $proposal));
+        event( new Prop("update", ["Admin","User.".$nim], false, $proposal));
+        // send #EVENT ProposalUpdated to Mahasiswa.nim dan Admin
         return response()->json([
             'message' => 'Berhasil menyetujui proposal',
             'data' => $proposal
@@ -181,10 +218,12 @@ class ProposalTAController extends Controller
             ],404);
         }
         $proposal->status_proposal = -1;
+        $proposal->token = bin2hex(random_bytes(32));
+        $proposal->token_expired = now()->addHours(2);
         $proposal->save();
-        $mahasiswa = Mahasiswa::where('nim', $nim)->first();
         $proposal = ProposalTA::where('nim', $nim)->with('mahasiswa')->first();
-        event(new ProposalUpdated($mahasiswa->token(), false, $proposal));
+        event( new Prop("update", ["Admin","User.".$nim], false, $proposal));
+        // send #EVENT ProposalUpdated to Mahasiswa.nim dan Admin
         return response()->json([
             'message' => 'Berhasil menolak proposal',
             'data' => $proposal
@@ -197,6 +236,7 @@ class ProposalTAController extends Controller
     public function destroy($nim)
     {
         $proposal = ProposalTA::where('nim', $nim)->first();
+
         if (!$proposal) {
             return response()->json([
                 'message' => 'Proposal tidak ditemukan'
@@ -209,14 +249,27 @@ class ProposalTAController extends Controller
                 ],404);
             }
         }
+
         if ($proposal->status_proposal == 1) {
             return response()->json([
                 'message' => 'Tidak dapat menghapus proposal, proposal sudah disetujui'
             ], 400);
         }
+        //delete file
+        $file = $proposal->file_proposal;
+        if ($file) {
+            Storage::delete('public/proposal_ta/'.$file);
+        }
+
         $legacy = $proposal;
+
         $proposal->delete();
-        $mahasiswa = Mahasiswa::where('nim', $nim)->first();
+
+        event( new Prop("destroy", ["Admin","User.".$nim], true, [
+            'nim' => $nim,
+            'id' => $legacy->id
+        ]));
+
         return response()->json([
             'message' => 'Berhasil menghapus proposal',
             'data' => $legacy

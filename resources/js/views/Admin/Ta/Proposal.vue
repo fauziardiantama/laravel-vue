@@ -28,7 +28,7 @@
                 </CTableRow>
               </CTableHead>
               <CTableBody v-if="proposals.data.length > 0">
-                <CTableRow v-for="(proposal, index) in proposals.data" :key="proposal.id">
+                <CTableRow v-for="(proposal) in proposals.data" :key="proposal.id">
                   <CTableDataCell class="text-center">
                     {{ proposal.nim }}
                   </CTableDataCell>
@@ -123,7 +123,7 @@
           <CLabel>Dokumen proposal</CLabel>
         </CCol>
         <CCol :md="8">
-          <a :href="`${window.location.origin}/mahasiswa/ta/proposal-ta/${activeProposal.file_proposal}`" target="_blank" class="dokumen-link"><font-awesome-icon :icon="['far', 'file']" /> {{ activeProposal.judul_proposal }}</a>
+          <a :href="`${app}/mahasiswa/ta/proposal-ta/${activeProposal.token}/${activeProposal.file_proposal}`" target="_blank" class="dokumen-link"><font-awesome-icon :icon="['far', 'file']" /> {{ activeProposal.judul_proposal }}</a>
         </CCol>
       </CRow>
     </CModalBody>
@@ -159,7 +159,6 @@
 </style>
 
 <script>
-import Swal from 'sweetalert2';
 import pagination from '@/components/Pagination.vue';
 
 export default {
@@ -176,13 +175,15 @@ export default {
             to: 0,
             current_page: 1,
             data: []
-        },
+      },
       offset: 4,
       itemstatus: 'Mengambil items',
       showDetailModal: false,
       activeProposal: {
+        id: '',
         nim: '',
         judul_proposal: '',
+        token: '',
         file_proposal: '',
         tahun: '',
         semester_id: 1,
@@ -191,44 +192,60 @@ export default {
           nim: '',
           nama: ''
         }
-      }
+      },
+      app: window.location.origin
     }
   },
   async created() {
-    //like constructor
     this.getProposal();
   },
   mounted() {
-    //like update()
     console.log('Dashboard component mounted.');
-    // Echo.channel('items').listen('ItemAdded', (e) => {
-    //   console.log(e);
-    //   this.items.push(e.item);
-    // }).listen('ItemUpdated', (e) => {
-    //   console.log(e);
-    //   this.items = this.items.map(i => i.id === e.item.id ? e.item : i);
-    // }).listen('ItemDeleted', (e) => {
-    //   console.log(e);
-    //   this.items = this.items.filter(i => i.id !== e.id);
-    // });
+    Echo.private('Admin')
+    .listen('Prop', (e) => {
+      this.getProposal();
+      console.log({
+        event: "Prop",
+        data: e,
+        activeid: this.activeProposal.id,
+        isTrue: e.type == "update" && e.item.id == this.activeProposal.id
+      })
+      if (e.type == "update" && e.item.id == this.activeProposal.id) {
+          console.log("update");
+          console.log(e.item);
+          this.openDetailModal(e.item);
+        } else if (e.type == "destroy" && e.item.id == this.activeProposal.id) {
+          this.closeModal();
+        }
+    });
   },
   methods: {
     getProposal() {
-      axios.get(`${window.location.origin}/api/ta/proposal_ta?page=${this.proposals.current_page}`)
+      axios.get(`${this.app}/api/ta/proposal_ta?page=${this.proposals.current_page}`)
       .then(response => {
         this.proposals = response.data.data;
       })
       .catch(error => {
+        this.proposals = {
+            total: 0,
+            per_page: 2,
+            from: 1,
+            to: 0,
+            current_page: 1,
+            data: []
+      };
         this.itemstatus = error.response.data.message;
         console.log(error);
       });
     },
     openDetailModal(item) {
       this.activeProposal = {
+        id: item.id,
         nim: item.nim,
         judul_proposal: item.judul_proposal,
         tahun: item.tahun,
         semester_id: item.semester_id,
+        token: item.token,
         file_proposal: item.file_proposal,
         status_proposal: item.status_proposal,
         mahasiswa: {
@@ -241,8 +258,10 @@ export default {
     closeModal() {
       this.showDetailModal = false;
       this.activeProposal = {
+        id: '',
         nim: '',
         judul_proposal: '',
+        token: '',
         file_proposal: '',
         tahun: '',
         semester_id: null,
@@ -255,69 +274,53 @@ export default {
       }
     },
     approve(proposal) {
-      this.showLoadingAlert();
-      axios.put(`${window.location.origin}/api/ta/proposal_ta/${proposal.nim}/approved`)
+      this.$store.dispatch('showLoadingAlert');
+      axios.put(`${this.app}/api/ta/proposal_ta/${proposal.nim}/approved`)
       .then(response => {
-        this.showSuccessAlert('Proposal disetujui!');
+        this.$store.dispatch('showSuccessAlert', 'Proposal disetujui!');
         this.closeModal();
         this.openDetailModal(response.data.data);
-        this.getProposal();
       })
       .catch(error => {
         if (error.response.status === 400) {
           console.log(error.response.data);
-          this.showErrorAlert('Gagal menyetujui proposal!', error.response.data);
+          this.$store.dispatch('showErrorAlert', {
+            title: 'Gagal menyetujui proposal!',
+            message: error.response.data.message
+          });
         } else {
           console.log(error);
-          this.showErrorAlert('Gagal menyetujui proposal!', error.response.status);
+          this.$store.dispatch('showErrorAlert', {
+            title: 'Gagal menyetujui proposal!',
+            message: error.response.status
+          });
         }
       });
     },
     reject(proposal) {
-      this.showLoadingAlert();
-      axios.put(`${window.location.origin}/api/ta/proposal_ta/${proposal.nim}/rejected`)
+      this.$store.dispatch('showLoadingAlert');
+      axios.put(`${this.app}/api/ta/proposal_ta/${proposal.nim}/rejected`)
       .then(response => {
-        this.showSuccessAlert('Proposal ditolak!');
+        this.$store.dispatch('showSuccessAlert', 'Proposal ditolak!');
         this.closeModal();
         this.openDetailModal(response.data.data);
-        this.getProposal();
       })
       .catch(error => {
         if (error.response.status === 400) {
           console.log(error.response.data);
-          this.showErrorAlert('Gagal menolak proposal!', error.response.data);
+          this.$store.dispatch('showErrorAlert', {
+            title: 'Gagal menolak proposal!',
+            message: error.response.data.message
+          });
         } else {
           console.log(error);
-          this.showErrorAlert('Gagal menolak proposal!', error.response.status);
+          this.$store.dispatch('showErrorAlert', {
+            title: 'Gagal menolak proposal!',
+            message: error.response.status
+          });
         }
       });
-    },
-    showLoadingAlert() {
-      Swal.fire({
-        title: 'Loading...',
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => Swal.showLoading()
-      });
-    },
-    showSuccessAlert(message) {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 3000,
-        icon: "success",
-        title: message
-      });
-    },
-    showErrorAlert(message, error) {
-      Swal.fire({
-        title: `Error ${error.status}`,
-        text: message,
-        icon: 'error',
-        details: error.message || error // Display detailed error message if available
-      });
-    },
+    }
   }
 }
 </script>

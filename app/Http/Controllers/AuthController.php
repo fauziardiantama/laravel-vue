@@ -13,6 +13,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\baseMail;
+use App\Events\Mhs;
 
 
 class AuthController extends Controller
@@ -43,7 +44,7 @@ class AuthController extends Controller
                         [
                             "view" => "emails.akun",
                             "from" => [
-                                "address" => "admin@newkmmd3ti.vokasi.uns.ac.id",
+                                "address" =>  env('MAIL_FROM_ADDRESS'),
                                 "name" => "Notifikasi D3TI"
                             ],
                             "tags" => [ "verifikasi", "akun", "d3ti","kuliah","notifikasi" ],
@@ -62,6 +63,7 @@ class AuthController extends Controller
                             "attachments" => []
                         ]
                     ));
+                    event( new Mhs("store", ["Admin"], false, $mahasiswa));
                     return response()->json([
                         'message' => 'Mahasiswa berhasil didaftarkan',
                         'mahasiswa' => $mahasiswa
@@ -266,7 +268,7 @@ class AuthController extends Controller
                 [
                     "view" => "emails.akun",
                     "from" => [
-                        "address" => "admin@newkmmd3ti.vokasi.uns.ac.id",
+                        "address" => env('MAIL_FROM_ADDRESS'),
                         "name" => "Notifikasi D3TI"
                     ],
                     "tags" => [ "verifikasi", "akun", "d3ti","kuliah","notifikasi" ],
@@ -306,6 +308,7 @@ class AuthController extends Controller
                     $mahasiswa->konfirmasi_token = null;
                     $mahasiswa->konfirmasi = true;
                     $mahasiswa->save();
+                    event( new Mhs("store", ["Admin"], false, $mahasiswa));
                     return redirect(config('app.url').'/mahasiswa/login?status=verified');
                 } else {
                     return redirect(config('app.url').'/mahasiswa/login?status=invalid');

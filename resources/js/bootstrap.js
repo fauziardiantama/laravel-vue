@@ -39,7 +39,7 @@ window.Echo = new Echo({
     key: "f832e8f2e80a36ce8f8d",
     cluster: 'ap1',
     wsHost: `ws-ap1.pusher.com`,
-    authEndpoint: 'api/broadcasting/auth',
+    authEndpoint: `${window.location.origin}/api/broadcasting/auth`,
     auth: {
         headers: {
             Authorization: `Bearer ${localStorage.getItem('token')}`,

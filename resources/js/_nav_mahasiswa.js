@@ -12,6 +12,20 @@ export default [
     to: { name: 'MahasiswaTaProposal' },
     icon: 'cil-pencil',
     needactivation: true
+  },
+  {
+    component: 'CNavItem',
+    name: 'Pembimbing',
+    to: { name: 'MahasiswaTaPembimbing' },
+    icon: 'cil-book',
+    needactivation: true
+  },
+  {
+    component: 'CNavItem',
+    name: 'Jadwal',
+    to: { name: 'MahasiswaTaJadwal' },
+    icon: 'cil-settings',
+    needactivation: true
   }
   // {
   //   component: 'CNavItem',

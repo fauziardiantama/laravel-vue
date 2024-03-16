@@ -17,12 +17,12 @@ class AuthUserSeeder extends Seeder
     public function run(): void
     {
         //get every nim from mahasiswa and make AuthUser with it
-        // $mahasiswas = Mahasiswa::all();
-        // foreach ($mahasiswas as $mahasiswa) {
-        //     $mahasiswa->auth()->create([
-        //         'role' => 'mahasiswa',
-        //     ]);
-        // }
+        $mahasiswas = Mahasiswa::all();
+        foreach ($mahasiswas as $mahasiswa) {
+            $mahasiswa->auth()->create([
+                'role' => 'mahasiswa',
+            ]);
+        }
 
         //get every nim from dosen and make AuthUser with it
         $dosens = Dosen::all();

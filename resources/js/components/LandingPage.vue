@@ -11,7 +11,10 @@
                         <router-link class="nav-link active" :to="{ name: 'Landing'}">Home</router-link>
                     </li>
                     <li class="nav-item">
-                        <router-link class="nav-link" :to="{ name: 'MahasiswaTa'}">Tugas Akhir</router-link>
+                        <router-link class="nav-link" :to="kmmLink">Kuliah Magang Mahasiswa</router-link>
+                    </li>
+                    <li class="nav-item">
+                        <router-link class="nav-link" :to="taLink">Tugas Akhir</router-link>
                     </li>
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="dropdown01" data-bs-toggle="dropdown" aria-expanded="false">Web terkait</a>
@@ -25,29 +28,57 @@
                     </li>
                 </ul>
                 <span class="nav-item">
-                    <router-link class="btn-solid-sm" :to="{ name: 'MahasiswaLogin'}">Daftar/Masuk</router-link>
+                    <router-link v-if="!logged" class="btn-solid-sm" :to="{ name: 'MahasiswaLogin'}">Daftar/Masuk</router-link>
+                    <button v-else class="btn-solid-sm" @click="logout">Keluar</button>
                 </span>
             </div> 
         </div> 
     </nav>
     <header id="header" class="header">
-    <div class="container">
+    <div class="container d-block">
         <div class="row">
             <div class="col-lg-6 z-top">
                 <div class="text-container">
                     <h1 class="h1-large">D3 Teknik Informatika</h1>
-                    <p class="p-large">Selamat datang! Untuk mengakses fitur-fitur yang lebih lengkap, silakan masuk atau buat akun anda.</p>
-                    <form>
+                    <p v-if="!logged" class="p-large">Selamat datang! Untuk mengakses fitur-fitur yang lebih lengkap, silakan masuk atau buat akun anda.</p>
+                    <form v-if="!logged">
                         <div class="form-group col-12 col-md-10">
-                            <input type="email" class="form-control-input" placeholder="youremail@student.uns.ac.id" required v-model="email" />
+                            <input
+                                type="email"
+                                :class="'form-control form-control-input' + (form_validation.email.invalid ? ' is-invalid text-danger' : '')"
+                                placeholder="youremail@student.uns.ac.id"
+                                v-model="form.email"
+                                required />
+                            <div v-show="form_validation.email.invalid" class="invalid-feedback lefty">
+                                {{  form_validation.email.feedback }}
+                            </div>
                         </div>
                         <collapse-transition :duration="200">
-                            <div class="form-group col-12 col-md-10" v-show="showPassword">
-                                <input type="password" class="form-control-input" placeholder="password" v-model="password" required />
+                            <div v-show="emailIsFilled">
+                                <div :class="'form-group col-12 col-md-10 text-left d-flex'+(form_validation.password.invalid ? ' mb-0' : '')">
+                                    <input
+                                        :type="showPassword ? 'text' : 'password'"
+                                        :class="'form-control form-control-input password' + (form_validation.password.invalid ? ' is-invalid text-danger' : '')"
+                                        placeholder="password"
+                                        v-model="form.password"
+                                        required />
+                                    <div class="show-password">
+                                        <button class="btn h-100" type="button" @click="showPassword = !showPassword">
+                                            <i v-if="!showPassword" class="fas fa-eye"></i>
+                                            <i v-else class="fas fa-eye-slash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div v-show="form_validation.password.invalid" :class="'invalid-feedback lefty' + (form_validation.password.invalid ? ' d-block mb-4' : '')">
+                                    {{ form_validation.password.feedback }}
+                                </div>
                             </div>
                         </collapse-transition>
                     </form>
-                    <button class="btn-solid-lg" @click="login">Klik untuk masuk!</button>
+                    <button v-if="!logged" class="btn-solid-lg" @click="login">Klik untuk masuk!</button>
+                    <p v-if="logged" class="p-large">Selamat datang, {{ user.nama }}! Silahkan pilih akses. </p>
+                    <router-link v-if="logged" class="btn-solid-lg" :to="kmmLink">Kuliah Magang Mahasiswa</router-link>
+                    <router-link v-if="logged" class="btn-solid-lg" :to="taLink">Tugas Akhir</router-link>
                 </div>
             </div> 
             <div class="col-lg-6">
@@ -125,12 +156,13 @@
     </button>
 </template>
 
-<style scoped>
+<style type="scss" scoped>
 
-@import 'public/assets/css/bootstrap.min.css';
-@import 'public/assets/css/fontawesome-all.min.css';
-@import 'public/assets/css/swiper.css';
-@import 'public/assets/css/styles.css';
+@import '../../../public/assets/css/bootstrap.min.css';
+@import '../../../public/assets/css/fontawesome-all.min.css';
+@import '../../../public/assets/css/swiper.css';
+@import '../../../public/assets/css/styles.css';
+
 #app {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -148,6 +180,26 @@
 .fade-leave-to {
   opacity: 0;
 }
+.password {
+    border-radius: 8px 0px 0px 8px;
+}
+
+.show-password {
+    border-radius: 0px 8px 8px 0px;
+    background-color: #cbcbd1;
+}
+
+.show-password button {
+    padding-left: 15px;
+    padding-right: 15px;
+    font-size: 20px;
+    color: #757575;
+}
+
+.lefty {
+    text-align: left;
+}
+
 </style>
 
 <script>
@@ -160,39 +212,124 @@ export default {
     },
     data() {
         return {
-            email: '',
-            password: '',
-            showPassword: false
+            form : {
+                email: '',
+                password: ''
+            },
+            form_validation: {
+                email: {
+                    invalid: false,
+                    feedback: ''
+                },
+                password: {
+                    invalid: false,
+                    feedback: ''
+                }
+            },
+            showPassword: false,
+            logged: false,
+            auth: null,
+            user: null
+        }
+    },
+    computed: {
+        emailIsFilled() {
+            return this.form.email.trim().length > 0;
+        },
+        kmmLink() {
+            return !this.logged ? { name: 'MahasiswaKmm' } : { name: `${this.auth.name.charAt(0).toUpperCase() + this.auth.name.slice(1)}Kmm` };
+        },
+        taLink() {
+            return !this.logged ? { name: 'MahasiswaTa' } : { name: `${this.auth.name.charAt(0).toUpperCase() + this.auth.name.slice(1)}Ta` };
         }
     },
     watch: {
-        email(newValue) {
-            this.showPassword = newValue.trim().length > 0;
-            if (!this.showPassword) {
-                this.password = '';
-            }
-        },
+        emailIsFilled() {
+            this.password = '';
+        }
+    },
+    created() {
+        console.log('LandingPage Component created.')
+        this.$store.dispatch('user').then((response) => {
+            this.logged = true;
+            this.auth = response.data.auth;
+            this.user = response.data.user;
+        }).catch(() => {
+            this.logged = false;
+            this.user = null;
+        });
     },
     mounted() {
       let bootstrap = document.createElement('script');
-      bootstrap.setAttribute('src', `${window.location.origin}/assets/js/bootstrap.min.js`);
-      document.head.appendChild(bootstrap);
+        bootstrap.setAttribute('src', `${window.location.origin}/assets/js/bootstrap.min.js`);
+        document.head.appendChild(bootstrap);
       let script = document.createElement('script');
-      script.setAttribute('src', `${window.location.origin}/assets/js/scripts.js`);
-      document.head.appendChild(script);
+        script.setAttribute('src', `${window.location.origin}/assets/js/scripts.js`);
+        document.head.appendChild(script);
       let swiper = document.createElement('script');
-      swiper.setAttribute('src', `${window.location.origin}/assets/js/swiper.min.js`);
-      document.head.appendChild(swiper);
+        swiper.setAttribute('src', `${window.location.origin}/assets/js/swiper.min.js`);
+        document.head.appendChild(swiper);
     },
     methods: {
         login() {
-            this.$store.dispatch('mahasiswaLogin', {
-                credentials: {
-                    email: this.email,
-                    password: this.password
-                },
-                router: () => this.$router.push({ name: 'MahasiswaTa' })
+            this.$store.dispatch('showLoadingAlert');
+            this.$store.dispatch('mahasiswaLogin', this.form).then((response) => {
+                this.$store.dispatch('showSuccessAlert', 'Login Berhasil');
+                this.logged = true;
+                this.form = {
+                    email: "",
+                    password: ""
+                }
+                this.form_validation = {
+                    email: {
+                        invalid: false,
+                        feedback: ""
+                    },
+                    password: {
+                        invalid: false,
+                        feedback: ""
+                    }
+                }
+                this.user = response.data.user;
+                console.log(this.user);
+            }).catch((error) => {
+                if (error.response.status === 422) {
+                    this.$store.dispatch('showErrorAlert', {
+                        title: 'Login Gagal',
+                        message: error.response.data.message
+                    });
+                    this.form_validation = {
+                        email: {
+                            invalid: !!error.response.data.errors.email,
+                            feedback: error.response.data.errors.email ? error.response.data.errors.email.join(' & ') : ""
+                        },
+                        password: {
+                            invalid: !!error.response.data.errors.password,
+                            feedback: error.response.data.errors.password ? error.response.data.errors.password.join(' & ') : ""
+                        }
+                    }
+                    this.form.password = "";
+                } else {
+                    console.log(error.response);
+                    this.$store.dispatch('showErrorAlert', {
+                        title: `Error ${error.response.status}`,
+                        message: error.response.data.message || error.response.data
+                    });
+                }
             });
+        },
+        logout() {
+            this.$store.dispatch('showLoadingAlert');
+            this.$store.dispatch('logout').then(() => {
+                this.$store.dispatch('showSuccessAlert', 'Logout Berhasil')
+                this.logged = false;
+                this.user = null;
+            }).catch(e => {
+                this.$store.dispatch('showErrorAlert', {
+                title: 'Logout Gagal',
+                message: e.response.data.message || e.response.data
+                })
+            })
         }
     }
 }

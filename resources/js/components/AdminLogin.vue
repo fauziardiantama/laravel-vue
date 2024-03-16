@@ -1,5 +1,5 @@
   <template>
-    <Login @login-attempt="login" :mahasiswa="false" :for="'admin'" :form_validation="form_validation"/>
+    <Login @login-attempt="login" :mahasiswa="false" :userType="'admin'" :form_validation="form_validation"/>
   </template>
   
   <script>
@@ -29,14 +29,11 @@
         methods: {
             login(credential) {
                 console.log('Email2 : '+credential.email)
-                this.$store.dispatch('adminLogin', {
-                    credentials: {
-                        email: credential.email,
-                        password: credential.password
-                    },
-                    router: () => this.$router.push({ name: 'AdminTa' })
-                }).then(response => {
+                this.$store.dispatch('showLoadingAlert');
+                this.$store.dispatch('adminLogin', credential)
+                .then(response => {
                     console.log(response);
+                    this.$store.dispatch('showSuccessAlert', 'Login Berhasil');
                     this.form_validation = {
                         email: {
                             invalid: false,
@@ -47,6 +44,7 @@
                             feedback: ''
                         }
                     };
+                    this.$router.push({ name: 'Landing' });
                 }).catch(e => {
                     if (e.response.status === 422) {
                         this.form_validation = {
@@ -59,6 +57,15 @@
                                 feedback: e.response.data.errors.password ? e.response.data.errors.password.join(' & ') : ""
                             }
                         }
+                        this.$store.dispatch('showErrorAlert', {
+                            title: 'Login Gagal',
+                            message: e.response.data.message
+                        });
+                    } else {
+                        this.$store.dispatch('showErrorAlert', {
+                            title: `Error ${e.response.status}`,
+                            message: e.response.data.message || e.response.data
+                        });
                     }
                 });
             }

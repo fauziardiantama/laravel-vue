@@ -31,10 +31,10 @@
                   <CTableHeaderCell>Actions</CTableHeaderCell>
                 </CTableRow>
               </CTableHead>
-              <CTableBody v-if="tahuns.data.length > 0">
-                <CTableRow v-for="(tahun, index) in tahuns.data" :key="tahun.id">
+              <CTableBody v-if="tahuns.length > 0">
+                <CTableRow v-for="(tahun, index) in tahuns" :key="tahun.id">
                   <CTableDataCell class="text-center">
-                      {{ tahuns.current_page * tahuns.per_page - tahuns.per_page + index + 1 }}
+                      {{ index + 1 }}
                   </CTableDataCell>
                   <CTableDataCell>
                     {{ tahun.tahun }}
@@ -53,14 +53,6 @@
               </CTableBody>
             </CTable>
           </CCardBody>
-          <CCardFooter class="row">
-            <div class="col-12 mt-2 text-right right">
-              <pagination  :pagination="tahuns"
-                     @paginate="getTahun()"
-                     :offset="4">
-            </pagination>
-            </div>
-          </CCardFooter>
         </CCard>
       </CCol>
     </CRow>
@@ -85,7 +77,6 @@
 </style>
 
 <script>
-import Swal from 'sweetalert2';
 import pagination from '@/components/Pagination.vue';
 
 export default {
@@ -95,14 +86,7 @@ export default {
   },
   data() {
     return {
-      tahuns: {
-            total: 0,
-            per_page: 2,
-            from: 1,
-            to: 0,
-            current_page: 1,
-            data: []
-        },
+      tahuns: [],
       createItem: {
         tahun: ''
       },
@@ -112,105 +96,84 @@ export default {
           feedback: ''
         }
       },
-      itemstatus: 'Mengambil items',
-      offset: 4,
+      itemstatus: 'Mengambil items'
     }
   },
-  async created() {
-    //like constructor
+  created() {
     this.getTahun();
   },
   mounted() {
-    //like update()
     console.log('Dashboard component mounted.');
-    // Echo.channel('items').listen('ItemAdded', (e) => {
-    //   console.log(e);
-    //   this.items.push(e.item);
-    // }).listen('ItemUpdated', (e) => {
-    //   console.log(e);
-    //   this.items = this.items.map(i => i.id === e.item.id ? e.item : i);
-    // }).listen('ItemDeleted', (e) => {
-    //   console.log(e);
-    //   this.items = this.items.filter(i => i.id !== e.id);
-    // });
+    Echo.private('Admin')
+    .listen('Thn', (e) => {
+      console.log({
+        event: "Thn",
+        data: e
+      })
+      this.tahuns = e.item;
+    });
   },
   methods: {
     getTahun() {
-      axios.get(`${window.location.origin}/api/ta/tahun?page=${this.tahuns.current_page}`)
-          .then(response => {
-            this.tahuns = response.data.data;
-          })
-          .catch(error => {
-            this.itemstatus = error.response.data.message;
-            console.log(error);
-          });
+      axios.get(`${window.location.origin}/api/ta/tahun`)
+      .then(response => {
+        this.tahuns = response.data.data;
+      })
+      .catch(error => {
+        this.itemstatus = error.response.data.message;
+        console.log(error);
+      });
     },
     addItem() {
-      this.showLoadingAlert();
+      this.$store.dispatch('showLoadingAlert');
       axios.post(`${window.location.origin}/api/ta/tahun`, this.createItem)
       .then(response => {
         console.log(response);
-        this.showSuccessAlert('Item added successfully!');
+        this.$store.dispatch('showSuccessAlert', 'Item Added successfully!');
         this.createItem = {
           tahun: ''
-        }
-        this.getTahun();
+        };
       })
       .catch(error => {
         if (error.response.status === 422) {
           this.form_validation.tahun.invalid = !!error.response.data.errors.tahun;
           this.form_validation.tahun.feedback = error.response.data.errors.tahun.join(' & ');
-          this.showErrorAlert('Failed to add item!', error.response.data.message);
+          this.$store.dispatch('showErrorAlert', {
+            title: 'Gagal menambah tahun',
+            message: error.response.data.message
+          });
         } else {
           console.log(error);
-          this.showErrorAlert('Failed to add item!', error.response.status);
+          this.$store.dispatch('showErrorAlert', {
+            title: 'Gagal menambah tahun',
+            message: error.response.status
+          });
         }
       });
     },
     deleteItem(item) {
-      this.showLoadingAlert();      
+      this.$store.dispatch('showLoadingAlert');   
       axios.delete(`${window.location.origin}/api/ta/tahun/${item.tahun}`)
         .then(response => {
           console.log('berhasil delete', response.data.data);
-          this.showSuccessAlert('Item Deleted successfully!');
-          this.getTahun();
+          this.$store.dispatch('showSuccessAlert', 'Item Deleted successfully!');
         })
         .catch(error => {
           if (error.response.status === 400) {
             console.log(error.response.data);
-            this.showErrorAlert('Failed to delete item!', error.response.data);
+            this.$store.dispatch('showErrorAlert', {
+              title: 'Gagal menghapus item',
+              message: error.response.data.message
+            });
           } else {
             console.log(error);
-            this.showErrorAlert('Failed to delete item!', error.response.status);
+            this.$store.dispatch('showErrorAlert', {
+              title: 'Gagal menghapus item',
+              message: error.response.status
+            });
           }
         });
-    },
-    showLoadingAlert() {
-      Swal.fire({
-        title: 'Loading...',
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => Swal.showLoading()
-      });
-    },
-    showSuccessAlert(message) {
-      Swal.fire({
-        toast: true,
-        position: "top-end",
-        showConfirmButton: false,
-        timer: 3000,
-        icon: "success",
-        title: message
-      });
-    },
-    showErrorAlert(message, error) {
-      Swal.fire({
-        title: `Error ${error.status}`,
-        text: message,
-        icon: 'error',
-        details: error.message || error // Display detailed error message if available
-      });
-    },
+    }
   }
 }
 </script>

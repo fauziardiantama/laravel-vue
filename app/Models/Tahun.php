@@ -21,4 +21,9 @@ class Tahun extends Model
     {
         return $this->hasMany(ProposalTA::class, 'tahun', 'tahun');
     }
+
+    public function magang()
+    {
+        return $this->hasMany(Magang::class, 'tahun', 'tahun');
+    }
 }

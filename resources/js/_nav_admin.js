@@ -19,6 +19,24 @@ export default [
   },
   {
     component: 'CNavItem',
+    name: 'Jadwal',
+    to: { name: 'AdminTaJadwal' },
+    icon: 'cil-settings',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Ruangan',
+    to: { name: 'AdminTaRuangan' },
+    icon: 'cil-settings',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Sesi',
+    to: { name: 'AdminTaSesi' },
+    icon: 'cil-settings',
+  },
+  {
+    component: 'CNavItem',
     name: 'Tahun Akademik',
     to: { name: 'AdminTaTahunAkademik' },
     icon: 'cil-settings',

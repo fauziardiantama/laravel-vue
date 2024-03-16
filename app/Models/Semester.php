@@ -16,4 +16,9 @@ class Semester extends Model
     {
         return $this->hasMany(ProposalTA::class);
     }
+
+    public function jadwalPropTA()
+    {
+        return $this->hasMany(JadwalPropTA::class);
+    }
 }

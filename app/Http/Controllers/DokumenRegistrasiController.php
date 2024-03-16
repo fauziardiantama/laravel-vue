@@ -6,10 +6,10 @@ use App\Http\Requests\StoreDokumenRegistrasi;
 use App\Models\DokumenRegistrasi;
 use Illuminate\Http\Request;
 use App\Models\Mahasiswa;
-use App\Events\DokumenRegistration;
 use App\Http\Requests\DeleteDokumenRegistrasi;
 use Illuminate\Support\Facades\Storage;
-use App\Events\UserUpdated;
+use App\Events\DokReg;
+use App\Events\Mhs;
 
 class DokumenRegistrasiController extends Controller
 {
@@ -18,7 +18,16 @@ class DokumenRegistrasiController extends Controller
      */
     public function index()
     {
-        $dokumenRegistrasi = DokumenRegistrasi::with('mahasiswa')->orderBy('nim', 'asc')->paginate(2);
+        $dokumenRegistrasi = DokumenRegistrasi::orderBy('nim', 'asc')->paginate(10);
+        return response()->json([
+            'message' => 'Successfully retrieved dokumen registrasi',
+            'data' => $dokumenRegistrasi
+        ]);
+    }
+
+    public function indexWithMahasiswa()
+    {
+        $dokumenRegistrasi = DokumenRegistrasi::with('mahasiswa')->orderBy('nim', 'asc')->paginate(10);
         return response()->json([
             'message' => 'Successfully retrieved dokumen registrasi',
             'data' => $dokumenRegistrasi
@@ -75,10 +84,13 @@ class DokumenRegistrasiController extends Controller
                         'message' => 'Invalid type of dokumen registrasi'
                     ], 400);
             }
+            $dokumenRegistrasi->token = bin2hex(random_bytes(32));
+            $dokumenRegistrasi->token_expired = now()->addHours(2);
             $dokumenRegistrasi->save();
-            $mahasiswa = Mahasiswa::where('nim', $nim)->first();
-            event(new UserUpdated($request->user()->token(), $mahasiswa));
-            event(new DokumenRegistration($request->user()->token(), $dokumenRegistrasi->isEmpty(), $dokumenRegistrasi));
+            $mahasiswa->status = 0;
+            $mahasiswa->save();
+            event( new DokReg("store", ["Admin","User.".$nim], $dokumenRegistrasi->isEmpty(), $dokumenRegistrasi));
+            event( new Mhs("update", ["Admin","User.".$nim], false, $mahasiswa));
             return response()->json([
                 'message' => 'Successfully uploaded dokumen registrasi'
             ]);
@@ -100,12 +112,40 @@ class DokumenRegistrasiController extends Controller
                 'message' => 'NIM not match'
             ], 401);
         }
-        $dokumenRegistrasi = DokumenRegistrasi::where('nim', $nim)->first();
+        $dokumenRegistrasi = DokumenRegistrasi::where('nim', $nim)->with('mahasiswa')->first();
         if (!$dokumenRegistrasi) {
             return response()->json([
                 'message' => 'Dokumen registrasi not found'
             ], 404);
         }
+        $dokumenRegistrasi->token = bin2hex(random_bytes(32));
+        $dokumenRegistrasi->token_expired = now()->addHours(2);
+        $dokumenRegistrasi->save();
+        event( new DokReg("update", ["Admin","User.".$nim], $dokumenRegistrasi->isEmpty(), $dokumenRegistrasi));
+        return response()->json([
+            'message' => 'Successfully retrieved dokumen registrasi',
+            'isEmpty' => $dokumenRegistrasi->isEmpty(),
+            'data' => $dokumenRegistrasi
+        ]);
+    }
+
+    public function showWithMahasiswa(Request $request, $nim)
+    {
+        if ($request->user()->isMahasiswa() && $request->user()->mahasiswa()->first()->nim != $nim) {
+            return response()->json([
+                'message' => 'NIM not match'
+            ], 401);
+        }
+        $dokumenRegistrasi = DokumenRegistrasi::where('nim', $nim)->with('mahasiswa')->first();
+        if (!$dokumenRegistrasi) {
+            return response()->json([
+                'message' => 'Dokumen registrasi not found'
+            ], 404);
+        }
+        $dokumenRegistrasi->token = bin2hex(random_bytes(32));
+        $dokumenRegistrasi->token_expired = now()->addHours(2);
+        $dokumenRegistrasi->save();
+        event( new DokReg("update", ["Admin","User.".$nim], $dokumenRegistrasi->isEmpty(), $dokumenRegistrasi));
         return response()->json([
             'message' => 'Successfully retrieved dokumen registrasi',
             'isEmpty' => $dokumenRegistrasi->isEmpty(),
@@ -168,12 +208,14 @@ class DokumenRegistrasiController extends Controller
                     'message' => 'Failed to delete dokumen registrasi'
                 ], 500);
             }
+            $dokumenRegistrasi->token = bin2hex(random_bytes(32));
+            $dokumenRegistrasi->token_expired = now()->addHours(2);
             $dokumenRegistrasi->save();
             $mahasiswa = Mahasiswa::where('nim', $nim)->first();
             $mahasiswa->status = 0;
             $mahasiswa->save();
-            event(new UserUpdated($request->user()->token(), $mahasiswa));
-            event(new DokumenRegistration($request->user()->token(), $dokumenRegistrasi->isEmpty(), $dokumenRegistrasi));
+            event( new DokReg("destroy", ["Admin","User.".$nim], $dokumenRegistrasi->isEmpty(), $dokumenRegistrasi));
+            event( new Mhs("update", ["Admin","User.".$nim], false, $mahasiswa));
             return response()->json([
                 'message' => 'Successfully deleted dokumen registrasi',
                 'data' => $dokumenRegistrasi
