@@ -6,6 +6,7 @@ use App\Models\SuratJawaban;
 use Illuminate\Http\Request;
 use App\Http\Requests\SuratJawaban as SuratJawabanRequest;
 use Illuminate\Support\Facades\Storage;
+use App\Models\Magang;
 
 class SuratJawabanController extends Controller
 {
@@ -26,10 +27,81 @@ class SuratJawabanController extends Controller
 
     public function indexPaginate()
     {
-        $suratJawaban = SuratJawaban::orderBy('id_surat', 'DESC')->with(['magang' => function ($query) {
-            $query->with('mahasiswa');
-        }])->paginate(10);
-
+        $statusMapping = [
+            "disetujui" => 1,
+            "diterima" => 1,
+            "ditolak" => -1,
+            "menunggu" => 0,
+            "Menunggu" => 0,
+            "Ditolak" => -1,
+            "Diterima" => 1,
+            "Disetujui" => 1
+        ];
+    
+        $order = request()->order ?: 'id_surat';
+        $sort = request()->sort ?: 'asc';
+        $limit = request()->limit ?: 10;
+    
+        $query = SuratJawaban::query();
+    
+        if ($order == 'nim' || $order == 'nama') {
+            $query->addSelect([
+                $order => Magang::select('mahasiswa.'.$order)
+                    ->join('mahasiswa', 'magang.nim', '=', 'mahasiswa.nim')
+                    ->whereColumn('magang.id_magang', 'surat_jawaban.id_magang')
+                    ->limit(1)
+            ]);
+            $query->orderBy($order, $sort);
+        } else if ($order == 'status_diterima_instansi') {
+            $query->addSelect([
+                'status_diterima_instansi' => Magang::select('status_diterima_instansi')
+                    ->whereColumn('magang.id_magang', 'surat_jawaban.id_magang')
+                    ->limit(1)
+            ]);
+            $query->orderBy('status_diterima_instansi', $sort);
+        } else {
+            $query->orderBy($order, $sort);
+        }
+    
+        if (array_key_exists(request()->kueri, $statusMapping)) {
+            $query->whereHas('magang', function ($query) use ($statusMapping) {
+                $query->where('status_diterima_instansi', $statusMapping[request()->kueri]);
+            });
+        } else {
+            $query->where(function ($query) {
+                $query->whereHas('magang', function ($query) {
+                    $query->where('tahun', 'like', '%'.request()->kueri.'%')
+                    ->orWhereHas('mahasiswa', function ($query) {
+                        $query->where('mahasiswa.nim', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('mahasiswa.nama', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('mahasiswa.email', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('mahasiswa.no_telp', 'like', '%'.request()->kueri.'%');
+                    })
+                    ->orWhereHas('topik', function ($query) {
+                        $query->where('topik_kmm.nama_topik', 'like', '%'.request()->kueri.'%');    
+                    })
+                    ->orWhereHas('instansi', function ($query) {
+                        $query->where('instansi.nama', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('instansi.alamat', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('instansi.email', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('instansi.no_telp', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('instansi.web', 'like', '%'.request()->kueri.'%');
+                    })
+                    ->orWhereHas('dosen', function ($query) {
+                        $query->where('dosen.nik', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('dosen.nama', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('dosen.email', 'like', '%'.request()->kueri.'%');
+                    })
+                    ->orWhereHas('progres', function ($query) {
+                        $query->where('progres.progres', 'like', '%'.request()->kueri.'%');
+                    });
+                })
+                ->orWhere('file_surat', 'like', "%" . request()->kueri . "%");
+            });
+        }
+    
+        $suratJawaban = $query->with('magang.mahasiswa')->paginate($limit);
+    
         return response()->json([
             'message' => 'Berhasil menampilkan semua surat jawaban',
             'data' => $suratJawaban
@@ -107,6 +179,11 @@ class SuratJawabanController extends Controller
         if (!$magang->instansi()->exists() || $magang->instansi()->first()->status_instansi != 1) {
             return response()->json([
                 'message' => 'Instansi belum disetujui',
+            ], 400);
+        }
+        if ($magang->status_dosen != 1) {
+            return response()->json([
+                'message' => 'Dosen belum disetujui',
             ], 400);
         }
         if ($magang->suratJawaban()->exists()) {

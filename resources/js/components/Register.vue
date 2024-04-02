@@ -71,7 +71,7 @@
                   <CCollapse :visible="hint">
                     <CCard class="mb-3">
                       <CCardBody>
-                        password harus memiliki minimal satu huruf kapital, huruf kecil, angka, dan simbol. panjang minimal 8 karakter.
+                        password harus memiliki minimal satu huruf kapital, huruf kecil, angka, dan simbol (!,@,#,$,%,...). panjang minimal 8 karakter.
                       </CCardBody>
                     </CCard>
                   </CCollapse>

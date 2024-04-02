@@ -6,6 +6,8 @@ use App\Models\JadwalPropTA;
 use App\Models\ProposalTA;
 use App\Models\Dosen;
 use Illuminate\Http\Request;
+use App\Models\SesiUjian;
+use App\Models\Ruangan;
 
 class JadwalPropTAController extends Controller
 {
@@ -14,16 +16,63 @@ class JadwalPropTAController extends Controller
      */
     public function index(Request $request)
     {
-        if ($request->user()->isMahasiswa()) {
-            $jadwalPropTA = $request->user()->mahasiswa()->first()
-            ->proposalTa()->first()
-            ->jadwalPropTA()->with('semester', 'sesiUjian', 'ruangan', 'proposalTa', 'dosen')->paginate(10);
-        } else if ($request->user()->isDosen()) {
-            $jadwalPropTA = $request->user()->dosen()->first()
-            ->jadwalPropTA()->with('semester', 'sesiUjian', 'ruangan', 'proposalTa', 'dosen')->paginate(10);
+        $order = $request->order ?? 'id';
+        $sort = $request->sort ?? 'asc';
+        $limit = $request->limit ?? 10;
+
+        $query = JadwalPropTA::query();
+        if ($order == "no_sesi")
+        {
+            $query->addSelect([
+                $order => SesiUjian::select('no_sesi')
+                    ->whereColumn('sesi_id', 'sesi_ujian.id')
+                    ->limit(1)
+            ]);
+            $query->orderBy($order, $sort);
+        } else if ($order == "nama") {
+            $query->addSelect([
+                $order => Ruangan::select('nama')
+                    ->whereColumn('ruangan_id', 'ruangan.id')
+                    ->limit(1)
+            ]);
+            $query->orderBy($order, $sort);
         } else {
-            $jadwalPropTA = JadwalPropTA::with('semester', 'sesiUjian', 'ruangan', 'proposalTa', 'dosen')->paginate(10);
+            $query->orderBy($order, $sort);
         }
+
+        $query->where(function ($query) {
+            $query->whereHas('semester', function ($query) {
+                $query->where('semester', 'like', '%' . request()->kueri . '%');
+            })
+            ->orWhereHas('sesiUjian', function ($query) {
+                $query->where('no_sesi', 'like', '%' . request()->kueri . '%');
+            })
+            ->orWhereHas('ruangan', function ($query) {
+                $query->where('nama', 'like', '%' . request()->kueri. '%');
+            })
+            ->orWhereHas('proposalTa', function ($query) {
+                $query->where('nim', 'like', '%'.request()->kueri.'%')
+                ->orWhere('judul_proposal', 'like', '%'.request()->kueri.'%')
+                ->orWhere('file_proposal', 'like', '%'.request()->kueri.'%');
+            })
+            ->orWhere('tahun', 'like', '%' . request()->kueri . '%')
+            ->orWhere('tanggal', 'like', '%' . request()->kueri . '%');
+        });
+
+        if ($request->user()->isDosen()) {
+            $query->whereHas('dosen', function ($query) use ($request) {
+                $query->where('id_dosen', $request->user()->dosen()->first()->id_dosen);
+            });
+        }
+        
+        if ($request->user()->isMahasiswa()) {
+            $query->whereHas('proposalTa', function ($query) use ($request) {
+                $query->where('nim', $request->user()->mahasiswa()->first()->nim);
+            });
+        }
+
+        $jadwalPropTA = $query->with('semester', 'sesiUjian', 'ruangan', 'proposalTa', 'dosen')->paginate($limit);
+
         return response()->json([
             'status' => 'success',
             'data' => $jadwalPropTA

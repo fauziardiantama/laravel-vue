@@ -4,7 +4,7 @@
         <CCol :md="6">
             <CCard class="mb-4">
                 <CCardHeader component="h5">Dokumen Jawaban</CCardHeader>
-                <CCardBody class="custom-height">
+                <CCardBody v-if="have_approved_dosen" class="custom-height">
                     <CCardText class="mb-5">Dapatkan dokumen jawaban dari instansi</CCardText>
                     <div v-if="have_jawaban">
                         <CRow class="mb-3">
@@ -30,10 +30,15 @@
                         </CForm>
                     </div>
                 </CCardBody>
-                <CCardFooter>
+                <CCardBody v-else>
+                    <CCardText class="mb-5">Menunggu persetujuan dosen</CCardText>
+                </CCardBody>
+                <CCardFooter v-if="have_approved_dosen">
                     <CButton v-if="!have_jawaban" color="primary" class="m-2" @click="storeJawaban">Submit</CButton>
                     <CButton v-if="have_jawaban&&!have_diterima" color="primary" class="m-2" @click="openModalJawaban">Edit</CButton>
                     <CButton v-if="have_jawaban&&!have_diterima" color="danger" class="m-2" @click="deleteJawaban">Delete</CButton>
+                </CCardFooter>
+                <CCardFooter v-else>
                 </CCardFooter>
             </CCard>
         </CCol>
@@ -142,6 +147,9 @@ export default {
     computed: {
         have_diterima() {
             return this.magang?.status_diterima_instansi == 1;
+        },
+        have_approved_dosen() {
+            return this.magang?.status_dosen == 1;
         }
     },
     methods: {

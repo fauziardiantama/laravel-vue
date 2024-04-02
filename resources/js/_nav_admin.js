@@ -19,8 +19,14 @@ export default [
   },
   {
     component: 'CNavItem',
-    name: 'Jadwal',
-    to: { name: 'AdminTaJadwal' },
+    name: 'Bimbingan',
+    to: { name: 'AdminTaBimbingan' },
+    icon: 'cil-people'
+  },
+  {
+    component: 'CNavItem',
+    name: 'Jadwal Proposal',
+    to: { name: 'AdminTaJadwalProposal' },
     icon: 'cil-settings',
   },
   {

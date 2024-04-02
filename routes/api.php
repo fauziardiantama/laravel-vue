@@ -27,6 +27,8 @@ use App\Http\Controllers\ProgramStudiController;
 use App\Http\Controllers\FakultasController;
 use App\Http\Controllers\InformasiController;
 use App\Http\Controllers\PembimbingTaController;
+use App\Http\Controllers\BimbinganInstansiController;
+use App\Http\Controllers\BimbinganDosenController;
 
 /*
 |--------------------------------------------------------------------------
@@ -203,19 +205,49 @@ Route::prefix('/kmm')->group(function () {
                 Route::put('/fourth_step', [MagangController::class, 'putFourthStep']);
                 Route::put('/fourth_step/delete', [MagangController::class, 'deleteFourthStep']);
             });
+            Route::prefix('/bimbingan')->group(function () {
+                Route::prefix('/instansi')->group(function () {
+                    Route::get('/', [BimbinganInstansiController::class, 'index']);
+                    Route::post('/', [BimbinganInstansiController::class, 'store']);
+                    Route::put('/{id}', [BimbinganInstansiController::class, 'update']);
+                    Route::delete('/{id}', [BimbinganInstansiController::class, 'destroy']);
+                });
+                Route::prefix('/dosen')->group(function () {
+                    Route::get('/', [BimbinganDosenController::class, 'index']);
+                    Route::post('/', [BimbinganDosenController::class, 'store']);
+                    Route::put('/{id}', [BimbinganDosenController::class, 'update']);
+                    Route::delete('/{id}', [BimbinganDosenController::class, 'destroy']);
+                });
+            });
         });
         Route::middleware(['auth:passport','role:dosen,admin'])->group(function () {
             Route::get('/search', [MagangController::class, 'search']);
-            Route::put('/{id}/approve', [MagangController::class, 'approve']);
-            Route::put('/{id}/reject', [MagangController::class, 'reject']);
+            Route::prefix('/{id}')->group(function () {
+                Route::put('/approve', [MagangController::class, 'approve']);
+                Route::put('/reject', [MagangController::class, 'reject']);
+                Route::prefix('/bimbingan')->group(function () {
+                    Route::prefix('/instansi')->group(function () {
+                        Route::get('/', [BimbinganInstansiController::class, 'show']);
+                        Route::put('/{id_bimbingan}/approve', [BimbinganInstansiController::class, 'approve']);
+                        Route::put('/{id_bimbingan}/reject', [BimbinganInstansiController::class, 'reject']);
+                    });
+                    Route::prefix('/dosen')->group(function () {
+                        Route::get('/', [BimbinganDosenController::class, 'show']);
+                        Route::put('/{id_bimbingan}/approve', [BimbinganDosenController::class, 'approve']);
+                        Route::put('/{id_bimbingan}/reject', [BimbinganDosenController::class, 'reject']);
+                    });
+                });
+            });
         });
         Route::middleware(['auth:passport','role:admin'])->group(function () {
-            Route::get('/{id}', [MagangController::class, 'show']);
-            Route::post('/{id}/instansi/approve', [MagangController::class, 'approveJawaban']);
-            Route::post('/{id}/instansi/reject', [MagangController::class, 'rejectJawaban']);
             Route::post('/', [MagangController::class, 'store']);
-            Route::put('/{id}', [MagangController::class, 'update']);
-            Route::delete('/{id}', [MagangController::class, 'destroy']);
+            Route::prefix('/{id}')->group(function () {
+                Route::get('/', [MagangController::class, 'show']);
+                Route::put('/', [MagangController::class, 'update']);
+                Route::delete('/', [MagangController::class, 'destroy']);
+                Route::post('/instansi/approve', [MagangController::class, 'approveJawaban']);
+                Route::post('/instansi/reject', [MagangController::class, 'rejectJawaban']);
+            });
         });
     });
     Route::prefix('/progres')->group(function () {
@@ -404,9 +436,23 @@ Route::prefix('/ta')->group(function() {
             Route::get('/', [PembimbingTaController::class, 'index']);
             Route::post('/link', [PembimbingTaController::class, 'storeLink']);
             Route::put('/unlink', [PembimbingTaController::class, 'destroyLink']);
+            Route::prefix('/detail')->group(function () {
+                Route::get('/', [PembimbingTaController::class, 'indexDetail']);
+                Route::post('/', [PembimbingTaController::class, 'storeDetail']);
+                Route::put('/{id}', [PembimbingTaController::class, 'updateDetail']);
+                Route::delete('/{id}', [PembimbingTaController::class, 'destroyDetail']);
+            });
         });
         Route::middleware(['auth:passport','role:admin,dosen','active'])->group(function () {
-            Route::get('/{nim}', [PembimbingTaController::class, 'show']);
+            Route::get('/all', [BimbinganDosenController::class, 'indexTa']);
+            Route::prefix('/{nim}')->group(function () {
+                Route::get('/', [PembimbingTaController::class, 'show']);
+                Route::prefix('/detail')->group(function () {
+                    Route::get('/', [PembimbingTaController::class, 'showDetail']);
+                    Route::put('/{id}/approve', [PembimbingTaController::class, 'approveDetail']);
+                    Route::put('/{id}/reject', [PembimbingTaController::class, 'rejectDetail']);
+                });
+            });
         });
     });
     Route::prefix('/ruangan')->group(function () {

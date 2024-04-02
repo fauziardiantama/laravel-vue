@@ -16,6 +16,8 @@ use App\Http\Requests\UpFourthStepRequest;
 use App\Models\RencanaMagang;
 use App\Events\Mgng;
 use App\Events\RncMgng;
+use App\Models\Mahasiswa;
+use App\Models\Progres;
 
 
 class MagangController extends Controller
@@ -33,7 +35,8 @@ class MagangController extends Controller
                 'instansi',
                 'dosen',
                 'progres',
-                'rencanaMagang'
+                'rencanaMagang',
+                'proposalTa'
             ])->first();
             if (!$magang) {
                 return response()->json([
@@ -44,40 +47,101 @@ class MagangController extends Controller
                 'message' => 'Berhasil menampilkan data magang',
                 'data' => $magang
             ]);
-        } else if ($request->user()->isDosen()) {
-            $user = $request->user()->dosen()->first();
-            $magang = Magang::where('id_dosen', $user->id_dosen)->with([
+        } else {
+            $statusMapping = [
+                "disetujui" => 1,
+                "diterima" => 1,
+                "ditolak" => -1,
+                "menunggu" => 0
+            ];
+
+            $order = $request->order ?: 'id_magang';
+            $sort = $request->sort ?: 'asc';
+            $limit = $request->limit ?: 10;
+
+            $query = Magang::query();
+
+            if ($order=="nama") {
+                $query->addSelect([
+                    $order => Mahasiswa::select('nama')
+                    ->whereColumn('mahasiswa.nim', 'magang.nim')
+                    ->limit(1)
+                ]);
+                $query->orderBy($order, $sort);
+            } else if ($order=="instansi") {
+                $query->addSelect([
+                    $order => Instansi::select('nama')
+                    ->whereColumn('instansi.id_instansi', 'magang.id_instansi')
+                    ->limit(1)
+                ]);
+                $query->orderBy($order, $sort);
+            } else if ($order=="progres") {
+                $query->addSelect([
+                    $order => Progres::select('progres')
+                    ->whereColumn('progres.id_progres', 'magang.id_progres')
+                    ->limit(1)
+                ]);
+                $query->orderBy($order, $sort);
+            } else {
+                $query->orderBy($order, $sort);
+            }
+
+            if (array_key_exists(strtolower($request->status), $statusMapping)) {
+                $query->where('status_dosen', $statusMapping[strtolower($request->status)]);
+            } else {
+                $query->where(function ($query) {
+
+                    $query->where('tahun', 'like', '%'.request()->kueri.'%')
+                    ->orWhereHas('mahasiswa', function ($query) {
+                        $query->where('mahasiswa.nim', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('mahasiswa.nama', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('mahasiswa.email', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('mahasiswa.no_telp', 'like', '%'.request()->kueri.'%');
+                    })
+                    ->orWhereHas('topik', function ($query) {
+                        $query->where('topik_kmm.nama_topik', 'like', '%'.request()->kueri.'%');    
+                    })
+                    ->orWhereHas('instansi', function ($query) {
+                        $query->where('instansi.nama', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('instansi.no_telp', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('instansi.web', 'like', '%'.request()->kueri.'%');
+                    })
+                    ->orWhereHas('dosen', function ($query) {
+                        $query->where('dosen.nik', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('dosen.nama', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('dosen.email', 'like', '%'.request()->kueri.'%');
+                    })
+                    ->orWhereHas('progres', function ($query) {
+                        $query->where('progres.progres', 'like', '%'.request()->kueri.'%');
+                    });
+
+                });
+            }
+            //if dosen
+            if ($request->user()->isDosen()) {
+                $user = $request->user()->dosen()->first();
+                $query->where('id_dosen', $user->id_dosen);
+            }
+            $magang = $query->with([
                 'mahasiswa',
                 'tahun',
                 'topik',
                 'instansi',
                 'dosen',
                 'progres',
-                'rencanaMagang'
-            ])->orderBy('nim', 'desc')->paginate(10);
-            return response()->json([
-                'message' => 'Berhasil menampilkan data magang',
-                'data' => $magang
-            ]);
-        } else if ($request->user()->isAdmin()) {
-            $magang = Magang::with([
-                'mahasiswa',
-                'tahun',
-                'topik',
-                'instansi',
-                'dosen',
-                'progres',
-                'rencanaMagang'
-            ])->orderBy('nim', 'desc')->paginate(10);
+                'rencanaMagang',
+                'proposalTa'
+            ])->paginate($limit);
+
             return response()->json([
                 'message' => 'Berhasil menampilkan data magang',
                 'data' => $magang
             ]);
         }
-
         return response()->json([
             'message' => 'Unauthorized probably'
         ], 401);
+        
     }
 
     public function search(Request $request)
@@ -110,7 +174,6 @@ class MagangController extends Controller
                 ->orWhereHas('instansi', function ($query) use ($request) {
                     $query->where('instansi.nama', 'like', '%'.$request->kueri.'%')
                     ->orWhere('instansi.alamat', 'like', '%'.$request->kueri.'%')
-                    ->orWhere('instansi.email', 'like', '%'.$request->kueri.'%')
                     ->orWhere('instansi.no_telp', 'like', '%'.$request->kueri.'%')
                     ->orWhere('instansi.web', 'like', '%'.$request->kueri.'%');
                 })

@@ -4,65 +4,39 @@
       <CCol :md="12">
         <CCard class="mb-4">
           <CCardHeader class="row">
-            <p class="col-2">Daftar Mahasiswa</p>
+            <p class="col-6">Daftar Mahasiswa</p>
             <!--search bar-->
             <div class="col-6">
               <CInputGroup>
-                <CFormInput type="text" placeholder="Search" id="search" v-model="search" @keyup.enter="getMahasiswaBySearch(true)"/>
-                <CInputGroupText @click="getMahasiswaBySearch(true)" class="cursor-pointer">
+                <CFormInput type="text" placeholder="Search" id="search" :value="search" @keyup.enter="getUsers"/>
+                <CInputGroupText @click="getUsers" class="cursor-pointer">
                   <font-awesome-icon :icon="['fas', 'search']" />
                 </CInputGroupText>
               </CInputGroup>
             </div>
-            <div class="col-4 mt-2 text-right right">
-              <pagination v-if="!search_on"
-                :pagination="mahasiswas"
-                @paginate="getUsers()"
-                :offset="4">
-              </pagination>
-              <pagination v-if="search_on"
-                :pagination="mahasiswas"
-                @paginate="getMahasiswaBySearch(false)"
-                :offset="4">
-              </pagination>
-            </div>
           </CCardHeader>
           <CCardBody>
-            <CTable align="middle" class="mb-0 border" hover responsive>
-              <CTableHead color="light">
-                <CTableRow>
-                  <CTableHeaderCell class="text-center">
-                    NIM
-                  </CTableHeaderCell>
-                  <CTableHeaderCell>Nama</CTableHeaderCell>
-                  <CTableHeaderCell>Status</CTableHeaderCell>
-                  <CTableHeaderCell>Actions</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody v-if="mahasiswas.data.length > 0">
-                <CTableRow v-for="(mahasiswa) in mahasiswas.data" :key="mahasiswa.id">
-                  <CTableDataCell class="text-center">
-                    {{ mahasiswa.nim }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    {{ mahasiswa.nama }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <CBadge v-if="mahasiswa.status > 0" color="success">disetujui</CBadge><CBadge v-if="mahasiswa.status < 0" color="danger">Ditolak</CBadge><CBadge v-if="mahasiswa.status == 0" color="warning">Menunggu</CBadge>
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <CButton color="primary" @click="openDetailModal(mahasiswa)">Detail</CButton>
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-              <CTableBody v-else>
-                <CTableRow>
-                  <CTableDataCell class="text-center" colspan="4">
-                    {{ itemstatus }}
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-            </CTable>
+            <table-lite
+                class="table-lite"
+                :is-slot-mode="true"
+                :is-loading="mahasiswa.isLoading"
+                :is-re-search="mahasiswa.research"
+                :columns="mahasiswa.columns"
+                :rows="mahasiswa.rows"
+                :total="mahasiswa.totalRecordCount"
+                :sortable="mahasiswa.sortable"
+                :messages="mahasiswa.messages"
+                @do-search="mahasiswaSearch"
+            >
+            <template v-slot:status="data">
+              <CBadge v-if="data.value.status == 1" color="success">disetujui</CBadge>
+              <CBadge v-if="data.value.status == 2" color="danger">Ditolak</CBadge>
+              <CBadge v-if="data.value.status == 0" color="warning">Menunggu</CBadge>
+            </template>
+            <template v-slot:none="data">
+              <CButton color="primary" @click="openDetailModal(data.value)">Detail</CButton>
+            </template>
+            </table-lite>
           </CCardBody>
         </CCard>
       </CCol>
@@ -143,10 +117,6 @@
 </template>
 
 <style scoped>
-  .right {
-    display: flex;
-    justify-content: flex-end;
-  }
   .dokumen-link {
     color: #000;
     text-decoration: none;
@@ -156,35 +126,105 @@
     margin: 0 2px;
     font-size: 0.8rem;
     font-weight: 1000;
-}
+  }
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .table-header {
+    background: #f0f2f4;
+    color: rgba(44, 56, 74, 0.95);
+    border: 1px solid rgba(200, 204, 209, 0.99);
+  }
+
+  :deep(table.vtl-table) {
+    display: table !important;
+  }
 </style>
 
 <script>
-import pagination from '@/components/Pagination.vue';
-
 export default {
   name: 'Mahasiswa',
-  components: {
-    pagination
-  },
   data() {
     return {
-      search_on: false,
+      mahasiswa: {
+        isLoading: false,
+        columns: [
+          {
+            label: 'NIM',
+            field: 'nim',
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: '20%',
+            sortable: true,
+            isKey: true
+          },
+          {
+            label: 'Nama',
+            field: 'nama',
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "40%",
+            sortable: true,
+            sortable: true
+          },
+          {
+            label: "Status",
+            field: "status",
+            headerClasses: ["table-header", "text-center"],
+            columnClasses: ["text-center"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "25%",
+            sortable: true
+          },
+          {
+            label: "Action",
+            field: "none",
+            width: "15%",
+            sortable: false,
+            headerClasses: ["table-header", "text-center"],
+            columnClasses: ["text-center"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            }
+          },
+        ],
+        rows: [],
+        totalRecordCount: 0,
+        sortable: {
+          order: "nim",
+          sort: "desc",
+        },
+        messages: {
+          pagingInfo: "{0}-{1}/{2}",
+          pageSizeChangeLabel: "Per Halaman ",
+          gotoPageLabel: " Ke Hal. ",
+          noDataAvailable: "Tidak ada data",
+        },
+        page: {
+          limit: 10,
+          offset: 0
+        },
+        research: false
+      },
       search: '',
-      mahasiswas: {
-        total: 0,
-        per_page: 2,
-        from: 1,
-        to: 0,
-        current_page: 1,
-        data: []
-      },
-      offset: 4,
-      createItem: {
-        name: '',
-        description: ''
-      },
-      itemstatus: 'Mengambil items',
       showDetailModal: false,
       activeMahasiswa: {
         id : 0,
@@ -271,37 +311,36 @@ export default {
     });
   },
   methods: {
-    getMahasiswaBySearch(first = false) {
-      if (this.search == '') {
-        this.search_on = false;
-        this.getUsers();
-        return;
-      }
-      if (first) {
-        this.search_on = true;
-        this.mahasiswas.current_page = 1;
-        this.mahasiswas.data = [];
-      }
-      axios.get(`${window.location.origin}/api/kmm/mahasiswa/search?kueri=${this.search}&page=${this.mahasiswas.current_page}`)
+    mahasiswaSearch(offset, limit, order, sort) {
+      this.mahasiswa.isLoading = true;
+      let page = offset / limit + 1;
+      let url = `${window.location.origin}/api/kmm/mahasiswa?kueri=${this.search}&page=${page}&limit=${limit}&order=${order}&sort=${sort}`;
+      axios.get(url)
       .then(response => {
-        this.mahasiswas = response.data.data;
+        this.mahasiswa.research = false;
+        this.mahasiswa.rows = response.data.data.data;
+        this.mahasiswa.totalRecordCount = response.data.data.total;
+        this.mahasiswa.page = {
+          limit: limit,
+          offset: offset
+        };
+        this.mahasiswa.sortable = {
+          order: order,
+          sort: sort
+        };
+        this.mahasiswa.isLoading = false;
       })
-      .catch(error => {
-        console.log(error);
-        this.$store.dispatch('showErrorAlert', {
-            title: 'Gagal mengambil instansi',
-            message: error.response.status
-        });
-      });
     },
     getUsers() {
-      axios.get(`${window.location.origin}/api/kmm/mahasiswa?page=${this.mahasiswas.current_page}`)
-      .then(response => {
-        this.mahasiswas = response.data.data;
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      this.search = document?.getElementById('search')?.value ?? this.search;
+      this.mahasiswa.totalRecordCount = 0;
+      this.mahasiswa.rows = [];
+      this.mahasiswa.page = {
+        limit: 10,
+        offset: 0
+      };
+      this.mahasiswa.research = true;
+      this.mahasiswaSearch(this.mahasiswa.page.offset, this.mahasiswa.page.limit, this.mahasiswa.sortable.order, this.mahasiswa.sortable.sort);
     },
     openDetailModal(item) {
       this.activeMahasiswa = {

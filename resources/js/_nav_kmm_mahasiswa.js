@@ -19,6 +19,13 @@ export default [
     to: { name: 'MahasiswaKmmDokumen' },
     icon: 'cil-file',
     needactivation: true
+  },
+  {
+    component: 'CNavItem',
+    name: 'Bimbingan',
+    to: { name: 'MahasiswaKmmBimbingan' },
+    icon: 'cil-pencil',
+    needactivation: true
   }
   // {
   //   component: 'CNavItem',

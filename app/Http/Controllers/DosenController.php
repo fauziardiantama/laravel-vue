@@ -39,25 +39,20 @@ class DosenController extends Controller
      */
     public function index()
     {
-        $dosen = Dosen::orderBy('nama', 'desc')->with('topik')->paginate(10);
-        return response()->json([
-            'message' => 'Berhasil menampilkan dosen',
-            'data' => $dosen
-        ]);
-    }
-
-    public function search(Request $request)
-    {
-        $dosen = Dosen::where('nama', 'like', '%'.$request->kueri.'%')
-        ->orWhere('email', 'like', '%'.$request->kueri.'%')
-        ->orWhere('nik', 'like', '%'.$request->kueri.'%')
-        ->orWhereHas('topik', function ($query) use ($request) {
-            $query->where('nama_topik', 'like', '%'.$request->kueri.'%');
-        })
-        ->orderBy('nik', 'desc')
-        ->with('topik','magang')
-        ->paginate(10);
-
+        $order = request()->order ?: 'id_dosen';
+        $sort = request()->sort ?: 'asc';
+        $limit = request()->limit ?: 10;
+        $query = Dosen::query();
+        $query->orderBy($order, $sort);
+        $query->where(function ($query) {
+            $query->whereHas('topik', function ($query) {
+                $query->where('nama_topik', 'like', '%'.request()->kueri.'%');
+            })
+            ->orWhere('nama', 'like', '%'.request()->kueri.'%')
+            ->orWhere('email', 'like', '%'.request()->kueri.'%')
+            ->orWhere('nik', 'like', '%'.request()->kueri.'%');
+        });
+        $dosen = $query->with('topik','magang')->paginate($limit);
         return response()->json([
             'message' => 'Berhasil menampilkan dosen',
             'data' => $dosen

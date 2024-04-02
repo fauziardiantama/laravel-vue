@@ -17,14 +17,21 @@ export default [
     component: 'CNavItem',
     name: 'Pembimbing',
     to: { name: 'MahasiswaTaPembimbing' },
-    icon: 'cil-book',
+    icon: 'cil-people',
     needactivation: true
   },
   {
     component: 'CNavItem',
-    name: 'Jadwal',
-    to: { name: 'MahasiswaTaJadwal' },
+    name: 'Jadwal Proposal',
+    to: { name: 'MahasiswaTaJadwalProposal' },
     icon: 'cil-settings',
+    needactivation: true
+  },
+  {
+    component: 'CNavItem',
+    name: 'Bimbingan',
+    to: { name: 'MahasiswaTaBimbingan' },
+    icon: 'cil-people',
     needactivation: true
   }
   // {

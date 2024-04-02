@@ -7,8 +7,14 @@ export default [
   },
   {
     component: 'CNavItem',
-    name: 'Jadwal',
-    to: { name: 'DosenTaJadwal' },
+    name: 'Bimbingan',
+    to: { name: 'DosenTaBimbingan' },
+    icon: 'cil-people',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Jadwal Proposal',
+    to: { name: 'DosenTaJadwalProposal' },
     icon: 'cil-settings',
   }
 

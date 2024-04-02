@@ -61,9 +61,16 @@ class Magang extends Model
         return $this->hasMany(RencanaMagang::class, 'id_magang', 'id_magang');
     }
 
-    public function pembimbingTa()
+    public function proposalTa()
     {
-        return $this->hasMany(ProposalTA::class, 'id_magang', 'id_magang');
+        return $this->hasOneThrough(
+            ProposalTA::class,
+            PembimbingTa::class,
+            'id_magang', // Foreign key on PembimbingTa table...
+            'id', // Foreign key on ProposalTa table...
+            'id_magang', // Local key on Magang table...
+            'proposal_ta_id' // Local key on PembimbingTa table...
+        );
     }
 
     public function suratMagang()
@@ -74,5 +81,15 @@ class Magang extends Model
     public function suratJawaban()
     {
         return $this->hasMany(SuratJawaban::class, 'id_magang', 'id_magang');
+    }
+
+    public function bimbinganDosen()
+    {
+        return $this->hasMany(BimbinganDosen::class, 'id_magang', 'id_magang');
+    }
+
+    public function bimbinganInstansi()
+    {
+        return $this->hasMany(BimbinganInstansi::class, 'id_magang', 'id_magang');
     }
 }

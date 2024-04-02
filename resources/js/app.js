@@ -18,6 +18,7 @@ import { fab } from '@fortawesome/free-brands-svg-icons';
 import { fas } from '@fortawesome/free-solid-svg-icons';
 import { far } from '@fortawesome/free-regular-svg-icons';
 import { library } from '@fortawesome/fontawesome-svg-core';
+import VueTableLite from "vue3-table-lite"
 import 'nprogress/nprogress.css';
 
 import "bootstrap/dist/css/bootstrap.min.css";
@@ -34,6 +35,7 @@ app.use(CoreuiVue);
 app.provide('icons', icons);
 library.add(fab, fas, far);
 app.component('font-awesome-icon', FontAwesomeIcon);
+app.component('table-lite', VueTableLite)
 //tambah CIcon ??
 app.component('CIcon', CIcon);
 //tambah DocsExample dari folder components untuk ??

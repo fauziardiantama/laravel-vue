@@ -14,23 +14,44 @@ class MahasiswaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $mahasiswa = Mahasiswa::orderBy('nim', 'desc')->with('dokumenRegistrasi','magang','proposalTa')->paginate(10);
-        return response()->json([
-            'message' => 'berhasil menampilkan data mahasiswa',
-            'data' => $mahasiswa
-        ]);
-    }
+    // public function index()
+        // {
+        //     $mahasiswa = Mahasiswa::orderBy('nim', 'desc')->with('dokumenRegistrasi','magang','proposalTa')->paginate(10);
+        //     return response()->json([
+        //         'message' => 'berhasil menampilkan data mahasiswa',
+        //         'data' => $mahasiswa
+        //     ]);
+    // }
 
-    public function search(Request $request)
+    public function index(Request $request)
     {
-        $mahasiswa = Mahasiswa::where('nama', 'like', '%'.$request->kueri.'%')
-        ->orWhere('email', 'like', '%'.$request->kueri.'%')
-        ->orWhere('nim', 'like', '%'.$request->kueri.'%')
-        ->orWhere('no_telp', 'like', '%'.$request->kueri.'%')
-        ->orderBy('nim', 'desc')
-        ->paginate(10);
+        $statusMapping = [
+            "disetujui" => 1,
+            "diterima" => 1,
+            "ditolak" => -1,
+            "menunggu" => 0,
+            "Menunggu" => 0,
+            "Ditolak" => -1,
+            "Diterima" => 1,
+            "Disetujui" => 1
+        ];
+        $order = $request->order ?: 'nim';
+        $sort = $request->sort ?: 'asc';
+        $limit = $request->limit ?: 10;
+        if (array_key_exists($request->kueri, $statusMapping)) {
+            $mahasiswa = Mahasiswa::where('status', $statusMapping[$request->kueri])
+            ->with('dokumenRegistrasi','magang','proposalTa')
+            ->orderBy($order, $sort)
+            ->paginate($limit);
+        } else {
+            $mahasiswa = Mahasiswa::where('nama', 'like', '%'.$request->kueri.'%')
+            ->orWhere('email', 'like', '%'.$request->kueri.'%')
+            ->orWhere('nim', 'like', '%'.$request->kueri.'%')
+            ->orWhere('no_telp', 'like', '%'.$request->kueri.'%')
+            ->orderBy($order, $sort)
+            ->with('dokumenRegistrasi','magang','proposalTa')
+            ->paginate($limit);
+        }
 
         return response()->json([
             'message' => 'Berhasil menampilkan instansi',

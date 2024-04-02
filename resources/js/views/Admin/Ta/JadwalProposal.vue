@@ -68,63 +68,46 @@
         <CCol :md="12">
           <CCard class="mb-4">
             <CCardHeader class="row">
-              <p class="col-7">Daftar Jadwal</p>
-              <div class="col-5 mt-2 text-right right">
-                <pagination  :pagination="jadwals"
-                       @paginate="getJadwal()"
-                       :offset="4">
-              </pagination>
+              <p class="col-6">Daftar Jadwal</p>
+              <!--search bar-->
+              <div class="col-6">
+                <CInputGroup>
+                  <CFormInput type="text" placeholder="Search" id="search" :value="search" @keyup.enter="getJadwal"/>
+                  <CInputGroupText @click="getJadwal" class="cursor-pointer">
+                    <font-awesome-icon :icon="['fas', 'search']" />
+                  </CInputGroupText>
+                </CInputGroup>
               </div>
             </CCardHeader>
             <CCardBody>
-              <CTable align="middle" class="mb-0 border" hover responsive>
-                <CTableHead color="light">
-                  <CTableRow>
-                    <CTableHeaderCell class="text-center">
-                      #
-                    </CTableHeaderCell>
-                    <CTableHeaderCell>Tanggal</CTableHeaderCell>
-                    <CTableHeaderCell>Tahun</CTableHeaderCell>
-                    <CTableHeaderCell>Semester</CTableHeaderCell>
-                    <CTableHeaderCell>Sesi</CTableHeaderCell>
-                    <CTableHeaderCell>Ruangan</CTableHeaderCell>
-                    <CTableHeaderCell>Actions</CTableHeaderCell>
-                  </CTableRow>
-                </CTableHead>
-                <CTableBody v-if="jadwals.data.length > 0">
-                  <CTableRow v-for="(jadwal,index) in jadwals.data" :key="jadwal.id">
-                    <CTableDataCell class="text-center">
-                        <!-- index calculated with pages -->
-                        {{ index + 1 + (jadwals.current_page - 1) * jadwals.per_page }}
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      {{ jadwal.tanggal }}
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      {{ jadwal.tahun }}
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      {{ jadwal.semester?.semester }}
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      {{ jadwal.sesi_ujian?.no_sesi }}
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      {{ jadwal.ruangan?.nama }}
-                    </CTableDataCell>
-                    <CTableDataCell>
-                      <CButton color="primary" @click="openDetailModal(jadwal)">Detail</CButton>
-                    </CTableDataCell>
-                  </CTableRow>
-                </CTableBody>
-                <CTableBody v-else>
-                  <CTableRow>
-                    <CTableDataCell class="text-center" colspan="7">
-                      {{ itemstatus }}
-                    </CTableDataCell>
-                  </CTableRow>
-                </CTableBody>
-              </CTable>
+              <table-lite
+                  class="table-lite"
+                  :is-slot-mode="true"
+                  :is-re-search="jadwal.research"
+                  :is-loading="jadwal.isLoading"
+                  :columns="jadwal.columns"
+                  :rows="jadwal.rows"
+                  :total="jadwal.totalRecordCount"
+                  :sortable="jadwal.sortable"
+                  :messages="jadwal.messages"
+                  @do-search="jadwalSearch"
+              >
+                <template v-slot:id="data">
+                  {{ data.value.index }}
+                </template>
+                <template v-slot:semester_id="data">
+                  {{ data.value.semester?.semester ?? '-' }}
+                </template>
+                <template v-slot:no_sesi="data">
+                  {{ data.value.sesi_ujian?.no_sesi ?? '-' }}
+                </template>
+                <template v-slot:nama="data">
+                  {{ data.value.ruangan?.nama ?? '-' }}
+                </template>
+                <template v-slot:none="data">
+                  <CButton color="primary" @click="openDetailModal(data.value)">Detail</CButton>
+                </template>
+              </table-lite>
             </CCardBody>
           </CCard>
         </CCol>
@@ -327,10 +310,6 @@
   </template>
   
   <style scoped>
-    .right {
-      display: flex;
-      justify-content: flex-end;
-    }
     .dokumen-link {
       color: #000;
       text-decoration: none;
@@ -340,17 +319,24 @@
       margin: 0 2px;
       font-size: 0.8rem;
       font-weight: 1000;
-  }
+    }
+    .cursor-pointer {
+      cursor: pointer;
+    }
+    .table-header {
+      background: #f0f2f4;
+      color: rgba(44, 56, 74, 0.95);
+      border: 1px solid rgba(200, 204, 209, 0.99);
+    }
+
+    :deep(table.vtl-table) {
+      display: table !important;
+    }
   </style>
   
   <script>
-  import pagination from '@/components/Pagination.vue';
-  
   export default {
     name: 'JadwalProposal',
-    components: {
-      pagination
-    },
     data() {
       return {
         dosen_options: [
@@ -411,13 +397,121 @@
           { label: 'Lab 2', value: 3},
           { label: 'Lab 3', value: 4}
         ],
-        jadwals: {
-              total: 0,
-              per_page: 2,
-              from: 1,
-              to: 0,
-              current_page: 1,
-              data: []
+        jadwal: {
+          isLoading:false,
+          columns: [
+            {
+              label: "#",
+              field: "id",
+              headerClasses: ["table-header","text-center"],
+              columnClasses: ["text-center"],
+              headerStyles: 
+              {
+                background: "#f0f2f4",
+                color: "rgba(44, 56, 74, 0.95)",
+                border: "1px solid rgba(200, 204, 209, 0.99)",
+              },
+              width: "10%",
+              sortable: true,
+              isKey: true,
+            },
+            {
+              label: "Tanggal",
+              field: "tanggal",
+              headerClasses: ["table-header"],
+              headerStyles: 
+              {
+                background: "#f0f2f4",
+                color: "rgba(44, 56, 74, 0.95)",
+                border: "1px solid rgba(200, 204, 209, 0.99)",
+              },
+              width: "10%",
+              sortable: true,
+            },
+            {
+              label: "Tahun",
+              field: "tahun",
+              headerClasses: ["table-header"],
+              headerStyles: 
+              {
+                background: "#f0f2f4",
+                color: "rgba(44, 56, 74, 0.95)",
+                border: "1px solid rgba(200, 204, 209, 0.99)",
+              },
+              width: "10%",
+              sortable: true,
+            },
+            {
+              label: "Semester",
+              field: "semester_id",
+              headerClasses: ["table-header"],
+              headerStyles: 
+              {
+                background: "#f0f2f4",
+                color: "rgba(44, 56, 74, 0.95)",
+                border: "1px solid rgba(200, 204, 209, 0.99)",
+              },
+              width: "15%",
+              sortable: true,
+            },
+            {
+              label: "Sesi",
+              field: "no_sesi",
+              headerClasses: ["table-header"],
+              headerStyles: 
+              {
+                background: "#f0f2f4",
+                color: "rgba(44, 56, 74, 0.95)",
+                border: "1px solid rgba(200, 204, 209, 0.99)",
+              },
+              width: "10%",
+              sortable: true,
+            },
+            {
+              label: "Ruangan",
+              field: "nama",
+              headerClasses: ["table-header"],
+              headerStyles: 
+              {
+                background: "#f0f2f4",
+                color: "rgba(44, 56, 74, 0.95)",
+                border: "1px solid rgba(200, 204, 209, 0.99)",
+              },
+              width: "15%",
+              sortable: true,
+            },
+            {
+              label: "Action",
+              field: "none",
+              width: "15%",
+              sortable: false,
+              headerClasses: ["table-header", "text-center"],
+              columnClasses: ["text-center"],
+              headerStyles: 
+              {
+                background: "#f0f2f4",
+                color: "rgba(44, 56, 74, 0.95)",
+                border: "1px solid rgba(200, 204, 209, 0.99)",
+              }
+            },
+          ],
+          rows: [],
+          totalRecordCount: 0,
+          sortable: {
+            order: "id",
+            sort: "desc"
+          },
+          messages: {
+            pagingInfo: "{0}-{1}/{2}",
+            pageSizeChangeLabel: "Per Halaman ",
+            gotoPageLabel: " Ke Hal. ",
+            noDataAvailable: "Tidak ada data",
+          },
+          page: {
+            limit: 10,
+            offset: 0
+          },
+          research: false
         },
         form: {
           tanggal: '',
@@ -470,8 +564,7 @@
             invalid: false
           }
         },
-        offset: 4,
-        itemstatus: 'Mengambil items',
+        search: '',
         showDetailModal: false,
         showDosen: false,
         showProposal: false,
@@ -679,26 +772,44 @@
             console.log(error);
         });
       },
-      getJadwal() {
-        axios.get(`${window.location.origin}/api/ta/jadwal_proposal_ta?page=${this.jadwals.current_page}`)
-        .then(response => {
-          this.jadwals = response.data.data;
-          if (this.jadwals.data.length == 0) {
-            this.itemstatus = 'Tidak ada jadwal';
-          }
-        })
-        .catch(error => {
-            this.jadwals = {
-              total: 0,
-              per_page: 2,
-              from: 1,
-              to: 0,
-              current_page: 1,
-              data: []
-            };
-            this.itemstatus = error.response.data.message;
-            console.log(error);
+      jadwalSearch(offset, limit, order, sort) {
+        this.jadwal.isLoading = true;
+        //calculate page based on offset and limit
+        let page = offset / limit + 1;
+        let url = `${window.location.origin}/api/ta/jadwal_proposal_ta?kueri=${this.search}&page=${page}&limit=${limit}&order=${order}&sort=${sort}`;
+        axios.get(url)
+        .then((response) => {
+          this.jadwal.research = false;
+          console.log(this.search == '' ? '[kosong]' : this.search);
+          this.jadwal.rows = response.data.data.data;
+          //add iteration index and push to rows as 'index'
+          let pagination = (response.data.data.current_page - 1) * response.data.data.per_page;
+          this.jadwal.rows.forEach((item, index) => {
+            //calculate index based on current page
+            item.index = index + 1 + pagination;
+          });
+          this.jadwal.totalRecordCount = response.data.data.total;
+          this.jadwal.page = {
+            limit: limit, 
+            offset: offset,
+          };
+          this.jadwal.sortable = {
+            order: order,
+            sort: sort
+          };
+          this.jadwal.isLoading = false;
         });
+      },
+      getJadwal() {
+        this.search = document?.getElementById('search')?.value ?? this.search;
+        this.jadwal.totalRecordCount = 0;
+        this.jadwal.rows = [];
+        this.jadwal.page = {
+          limit: 10,
+          offset: 0
+        };
+        this.jadwal.research = true;
+        this.jadwalSearch(this.jadwal.page.offset, this.jadwal.page.limit, this.jadwal.sortable.order, this.jadwal.sortable.sort);
       },
       addJadwal() {
         this.$store.dispatch('showLoadingAlert');

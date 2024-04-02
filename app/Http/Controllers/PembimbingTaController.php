@@ -23,7 +23,7 @@ class PembimbingTaController extends Controller
                     'data' => null
                 ], 404);
             }
-            $pembimbingTa = $proposal->pembimbingTa()->with('dosen')->first();
+            $pembimbingTa = $proposal->magang()->with('dosen')->first();
             if (!$pembimbingTa) {
                 return response()->json([
                     'message' => 'Anda belum memiliki pembimbing TA',
@@ -72,16 +72,19 @@ class PembimbingTaController extends Controller
                     ], 404);
                 }
 
-                if ($proposal->pembimbingTa()->first()) {
+                if ($proposal->magang()->first()) {
                     return response()->json([
                         'message' => 'Pembimbing TA sudah ada',
-                        'data' => $proposal->with('pembimbingTa')->first()
+                        'data' => $proposal->with('magang')->first()
                     ], 404);
                 }
-                $proposal->pembimbingTa()->attach($magang->id_magang);
+                $pembimbingTa = new PembimbingTa();
+                $pembimbingTa->proposal_ta_id = $proposal->id;
+                $pembimbingTa->id_magang = $magang->id_magang;
+                $pembimbingTa->save();
                 return response()->json([
                     'message' => 'Berhasil menambahkan pembimbing TA',
-                    'data' => $proposal->with('pembimbingTa')->first()
+                    'data' => $proposal->with('magang')->first()
                 ]);
             } else {
                 return response()->json([
@@ -103,10 +106,10 @@ class PembimbingTaController extends Controller
                     'data' => null
                 ], 404);
             }
-            $proposal->pembimbingTa()->detach($proposal->pembimbingTa()->first()->id_magang);
+            PembimbingTa::where('proposal_ta_id', $proposal->id)->delete();
             return response()->json([
                 'message' => 'Berhasil menghapus pembimbing TA',
-                'data' => $proposal->with('pembimbingTa')->first()
+                'data' => $proposal->with('magang')->first()
             ]);
         }
     }
@@ -118,7 +121,7 @@ class PembimbingTaController extends Controller
     {
         $mahasiswa = Mahasiswa::where('nim', $nim)->first();
 
-        $pembimbingTas = $mahasiswa->proposalTa()->first()->pembimbingTa()->get();
+        $pembimbingTas = $mahasiswa->proposalTa()->first()->magang()->get();
 
         return response()->json([
             'message' => 'Berhasil menampilkan pembimbing TA',

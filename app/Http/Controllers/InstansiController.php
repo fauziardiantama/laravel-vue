@@ -21,35 +21,44 @@ class InstansiController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
-    {
-        $instansi = Instansi::orderBy('nama', 'desc')->paginate(10);
-        return response()->json([
-            'message' => 'Berhasil menampilkan instansi',
-            'data' => $instansi
-        ]);
-    }
+        // public function index()
+        // {
+        //     $order = request()->order ?: 'id_instansi';
+        //     $sort = request()->sort ?: 'asc';
+        //     $limit = request()->limit ?: 10;
+        //     $instansi = Instansi::orderBy($order, $sort)->paginate($limit);
+        //     return response()->json([
+        //         'message' => 'Berhasil menampilkan instansi',
+        //         'data' => $instansi
+        //     ]);
+    // }
     
-    public function search(Request $request)
+    public function index(Request $request)
     {
         $statusMapping = [
             "disetujui" => 1,
             "diterima" => 1,
             "ditolak" => -1,
             "menunggu" => 0,
+            "Menunggu" => 0,
+            "Ditolak" => -1,
+            "Diterima" => 1,
+            "Disetujui" => 1
         ];
-        
-        $status = $statusMapping[$request->kueri] ?? $request->kueri;
-        
-        $instansi = Instansi::where('nama', 'like', '%'.$request->kueri.'%')
-        ->orWhere('email', 'like', '%'.$request->kueri.'%')
-        ->orWhere('alamat', 'like', '%'.$request->kueri.'%')
-        ->orWhere('no_telp', 'like', '%'.$request->kueri.'%')
-        ->orWhere('web', 'like', '%'.$request->kueri.'%')
-        ->orWhere('status_instansi', $status)
-        ->orderBy('id_instansi', 'desc')
-        ->paginate(10);
-
+    
+        $order = $request->order ?: 'id_instansi';
+        $sort = $request->sort ?: 'asc';
+        $limit = $request->limit ?: 10;
+        if (array_key_exists($request->kueri, $statusMapping)) {
+            $instansi = Instansi::where('status_instansi', $statusMapping[$request->kueri])
+            ->orderBy($order, $sort)
+            ->paginate($limit);
+        } else {
+            $instansi = Instansi::where('nama', 'like', '%'.$request->kueri.'%')
+            ->orWhere('no_telp', 'like', '%'.$request->kueri.'%')
+            ->orderBy($order, $sort)
+            ->paginate($limit);
+        }
         return response()->json([
             'message' => 'Berhasil menampilkan instansi',
             'data' => $instansi

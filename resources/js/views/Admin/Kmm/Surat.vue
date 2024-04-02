@@ -4,135 +4,99 @@
       <CCol :md="12">
         <CCard class="mb-4">
           <CCardHeader class="row">
-            <p class="col-2">Daftar Surat Jawaban</p>
+            <p class="col-6">Daftar Jawaban</p>
             <!--search bar-->
             <div class="col-6">
               <CInputGroup>
-                <CFormInput type="text" placeholder="Search" id="search" v-model="jawaban_search" @keyup.enter="getJawabanBySearch(true)"/>
-                <CInputGroupText @click="getJawabanBySearch(true)" class="cursor-pointer">
+                <CFormInput type="text" placeholder="Search" id="searchJawaban" :value="searchJawaban" @keyup.enter="getJawabans"/>
+                <CInputGroupText @click="getJawabans" class="cursor-pointer">
                   <font-awesome-icon :icon="['fas', 'search']" />
                 </CInputGroupText>
               </CInputGroup>
             </div>
-            <div class="col-4 mt-2 text-right right">
-              <pagination v-if="!jawaban_search_on"
-                :pagination="jawabans"
-                @paginate="getJawabans()"
-                :offset="4">
-              </pagination>
-              <pagination v-if="jawaban_search_on"
-                :pagination="jawabans"
-                @paginate="getJawabanBySearch(false)"
-                :offset="4">
-              </pagination>
-            </div>
           </CCardHeader>
           <CCardBody>
-            <CTable align="middle" class="mb-0 border" hover responsive>
-              <CTableHead color="light">
-                <CTableRow>
-                  <CTableHeaderCell class="text-center">
-                    NIM
-                  </CTableHeaderCell>
-                  <CTableHeaderCell>Nama</CTableHeaderCell>
-                  <CTableHeaderCell>Surat Jawaban</CTableHeaderCell>
-                  <CTableHeaderCell>Status</CTableHeaderCell>
-                  <CTableHeaderCell>Action</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody v-if="jawabans.data.length > 0">
-                <CTableRow v-for="jawaban in jawabans.data" :key="jawaban.id_surat">
-                  <CTableDataCell class="text-center">
-                    {{ jawaban.magang?.nim ?? '-' }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    {{ jawaban.magang?.mahasiswa?.nama ?? '-' }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <a href="javascript:void(0)" class="dokumen-link" :id="'jawaban-'+jawaban.id_surat" @click="getDokumenJ(jawaban)">{{ jawaban.file_surat ?? '-' }}</a>
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    {{ jawaban.magang?.status_diterima_instansi == 1 ? 'Approved' : (jawaban.magang?.status_diterima_instansi == -1 ? 'Rejected' : 'Pending') }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <CButton color="success" @click="approve(jawaban)">Approve</CButton>
-                    <CButton color="danger" @click="reject(jawaban)">Tolak</CButton>
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-              <CTableBody v-else>
-                <CTableRow>
-                  <CTableDataCell class="text-center" colspan="4">
-                    {{ jawabanstatus }}
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-            </CTable>
+            <table-lite
+                  class="table-lite"
+                  :is-slot-mode="true"
+                  :is-re-search="jawaban.research"
+                  :is-loading="jawaban.isLoading"
+                  :columns="jawaban.columns"
+                  :rows="jawaban.rows"
+                  :total="jawaban.totalRecordCount"
+                  :sortable="jawaban.sortable"
+                  :messages="jawaban.messages"
+                  @do-search="jawabanSearch"
+              >
+                <template v-slot:id_surat="data">
+                  {{ data.value.index }}
+                </template>
+                <template v-slot:nim="data">
+                  {{ data.value.magang?.mahasiswa?.nim ?? '-' }}
+                </template>
+                <template v-slot:nama="data">
+                  {{ data.value.magang?.mahasiswa?.nama ?? '-' }}
+                </template>
+                <template v-slot:file_surat="data">
+                  <a href="javascript:void(0)" class="dokumen-link" :id="'jawaban-'+data.value.id_surat" @click="getDokumenJ(data.value)">{{ data.value.file_surat ?? '-' }}</a>
+                </template>
+                <template v-slot:status_diterima_instansi="data">
+                  <CBadge v-if="data.value.magang?.status_diterima_instansi == 1" color="success">disetujui</CBadge>
+                  <CBadge v-if="data.value.magang?.status_diterima_instansi == -1" color="danger">Ditolak</CBadge>
+                  <CBadge v-if="data.value.magang?.status_diterima_instansi == 0" color="warning">Menunggu</CBadge>
+                </template>
+                <template v-slot:none="data">
+                    <CButton color="success" @click="approve(data.value)">Approve</CButton>
+                    <CButton color="danger" @click="reject(data.value)">Tolak</CButton>
+                </template>
+            </table-lite>
           </CCardBody>
         </CCard>
       </CCol>
       <CCol :md="12">
         <CCard class="mb-4">
           <CCardHeader class="row">
-            <p class="col-2">Daftar Surat Magang</p>
+            <p class="col-6">Daftar Surat Magang</p>
             <!--search bar-->
             <div class="col-6">
               <CInputGroup>
-                <CFormInput type="text" placeholder="Search" id="search" v-model="surat_search" @keyup.enter="getSuratBySearch(true)"/>
-                <CInputGroupText @click="getSuratBySearch(true)" class="cursor-pointer">
+                <CFormInput type="text" placeholder="Search" id="searchSurat" :value="searchSurat" @keyup.enter="getSurats"/>
+                <CInputGroupText @click="getSurats" class="cursor-pointer">
                   <font-awesome-icon :icon="['fas', 'search']" />
                 </CInputGroupText>
               </CInputGroup>
             </div>
-            <div class="col-4 mt-2 text-right right">
-              <pagination v-if="!surat_search_on"
-                :pagination="surats"
-                @paginate="getSurats()"
-                :offset="4">
-              </pagination>
-              <pagination v-if="surat_search_on"
-                :pagination="surats"
-                @paginate="getSuratBySearch(false)"
-                :offset="4">
-              </pagination>
-            </div>
           </CCardHeader>
           <CCardBody>
-            <CTable align="middle" class="mb-0 border" hover responsive>
-              <CTableHead color="light">
-                <CTableRow>
-                  <CTableHeaderCell class="text-center">
-                    NIM
-                  </CTableHeaderCell>
-                  <CTableHeaderCell>Jenis</CTableHeaderCell>
-                  <CTableHeaderCell>Status pengajuan</CTableHeaderCell>
-                  <CTableHeaderCell>Surat</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody v-if="surats.data.length > 0">
-                <CTableRow v-for="surat in surats.data" :key="surat.id_surat">
-                  <CTableDataCell class="text-center">
-                    {{ surat.magang?.nim ?? '-' }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    {{ surat.jenis_surat == 1 ? 'Surat Pengantar' : (surat.jenis_surat == 2 ? 'Surat serah terima' : '-') }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    {{ surat.magang?.status_pengajuan_instansi == 1 ? 'Approved' : (surat.magang?.status_pengajuan_instansi == -1 ? 'Rejected' : 'Pending') }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <a href="javascript:void(0)" :id="'magang-'+surat.id_surat" class="dokumen-link" @click="getDokumen(surat)">{{ surat.file_surat ?? '-' }}</a>
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-              <CTableBody v-else>
-                <CTableRow>
-                  <CTableDataCell class="text-center" colspan="4">
-                    {{ suratstatus }}
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-            </CTable>
+            <table-lite
+                  class="table-lite"
+                  :is-slot-mode="true"
+                  :is-re-search="surat.research"
+                  :is-loading="surat.isLoading"
+                  :columns="surat.columns"
+                  :rows="surat.rows"
+                  :total="surat.totalRecordCount"
+                  :sortable="surat.sortable"
+                  :messages="surat.messages"
+                  @do-search="suratSearch"
+              >
+              <template v-slot:id_surat="data">
+                  {{ data.value.index }}
+                </template>
+                <template v-slot:nim="data">
+                  {{ data.value.magang?.nim ?? '-' }}
+                </template>
+                <template v-slot:jenis_surat="data">
+                  {{ data.value.jenis_surat == 1 ? 'Surat Pengantar' : (data.value.jenis_surat == 2 ? 'Surat serah terima' : '-') }}
+                </template>
+                <template v-slot:status_pengajuan_instansi="data">
+                  <CBadge v-if="data.value.magang?.status_pengajuan_instansi == 1" color="success">Sudah mengajukan</CBadge>
+                  <CBadge v-else color="secondary">Belum mengajukan</CBadge>
+                </template>
+                <template v-slot:file_surat="data">
+                  <a href="javascript:void(0)" :id="'magang-'+data.value.id_surat" class="dokumen-link" @click="getDokumen(data.value)">{{ data.value.file_surat ?? '-' }}</a>
+                </template>
+            </table-lite>
           </CCardBody>
         </CCard>
       </CCol>
@@ -141,10 +105,6 @@
 </template>
 
 <style scoped>
-  .right {
-    display: flex;
-    justify-content: flex-end;
-  }
   .dokumen-link {
     color: #000;
     text-decoration: none;
@@ -154,46 +114,232 @@
     margin: 0 2px;
     font-size: 0.8rem;
     font-weight: 1000;
-}
+  }
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .table-header {
+    background: #f0f2f4;
+    color: rgba(44, 56, 74, 0.95);
+    border: 1px solid rgba(200, 204, 209, 0.99);
+  }
+
+  :deep(table.vtl-table) {
+    display: table !important;
+  }
 </style>
 
 <script>
-import pagination from '@/components/Pagination.vue';
-import axios from 'axios';
+import TableLite from "vue3-table-lite";
+
 
 export default {
   name: 'Surat',
   components: {
-    pagination
+    TableLite
   },
   data() {
     return {
-      jawaban_search_on: false,
-      jawaban_search: '',
-      jawabanstatus: 'Mengambil items',
-      jawabans: {
-        total: 0,
-        per_page: 2,
-        from: 1,
-        to: 0,
-        current_page: 1,
-        data: []
+      jawaban: {
+        isLoading: false,
+        columns: [
+          {
+            label: "#",
+            field: "id_surat",
+            headerClasses: ["table-header", "text-center"],
+            columnClasses: ["text-center"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "10%",
+            sortable: true,
+            isKey: true,
+          },
+          {
+            label: "NIM",
+            field: "nim",
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "10%",
+            sortable: true,
+          },
+          {
+            label: "Nama",
+            field: "nama",
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "20%",
+            sortable: true,
+          },
+          {
+            label: "File Surat",
+            field: "file_surat",
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "15%",
+            sortable: true,
+          },
+          {
+            label: "Status Diterima Instansi",
+            field: "status_diterima_instansi",
+            headerClasses: ["table-header"],
+            columnClasses: ["text-center"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)"
+            },
+            width: "20%",
+            sortable: true,
+          },
+          {
+            label: "Action",
+            field: "none",
+            headerClasses: ["table-header"],
+            columnClasses: ["text-center"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "25%",
+            sortable: false,
+          }
+        ],
+        rows: [],
+        totalRecordCount: 0,
+        sortable: {
+          order: "id_surat",
+          sort: "desc"
+        },
+        messages: {
+          pagingInfo: "{0}-{1}/{2}",
+          pageSizeChangeLabel: "Per Halaman ",
+          gotoPageLabel: " Ke Hal. ",
+          noDataAvailable: "Tidak ada data",
+        },
+        page: {
+          limit: 10,
+          offset: 0
+        },
+        research: false
       },
-      surat_search_on: false,
-      surat_search: '',
-      suratstatus: 'Mengambil items',
-      surats: {
-        total: 0,
-        per_page: 2,
-        from: 1,
-        to: 0,
-        current_page: 1,
-        data: []
+      surat: {
+        isLoading: false,
+        columns: [
+          {
+            label: "#",
+            field: "id_surat",
+            headerClasses: ["table-header", "text-center"],
+            columnClasses: ["text-center"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "10%",
+            sortable: true,
+            isKey: true,
+          },
+          {
+            label: "NIM",
+            field: "nim",
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "10%",
+            sortable: true,
+          },
+          {
+            label: "Jenis Surat",
+            field: "jenis_surat",
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "20%",
+            sortable: true,
+          },
+          {
+            label: "Status Pengajuan Instansi",
+            field: "status_pengajuan_instansi",
+            headerClasses: ["table-header"],
+            columnClasses: ["text-center"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "25%",
+            sortable: true,
+          },
+          {
+            label: "File Surat",
+            field: "file_surat",
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "25%",
+            sortable: true,
+          }
+        ],
+        rows: [],
+        totalRecordCount: 0,
+        sortable: {
+          order: "id_surat",
+          sort: "desc"
+        },
+        messages: {
+          pagingInfo: "{0}-{1}/{2}",
+          pageSizeChangeLabel: "Per Halaman ",
+          gotoPageLabel: " Ke Hal. ",
+          noDataAvailable: "Tidak ada data",
+        },
+        page: {
+          limit: 10,
+          offset: 0
+        },
+        research: false
       },
-      offset: 4
+      searchJawaban: '',
+      searchSurat: ''
     }
   },
   async created() {
+    console.log('Dashboard component created.');
     this.getSurats();
     this.getJawabans();
   },
@@ -211,69 +357,75 @@ export default {
     });
   },
   methods: {
-    getSuratBySearch(first = false) {
-      if (this.surat_search == '') {
-        this.surat_search_on = false;
-        this.getSurat();
-        return;
-      }
-      if (first) {
-        this.surat_search_on = true;
-        this.surats.current_page = 1;
-        this.surats.data = [];
-      }
-      axios.get(`${window.location.origin}/api/kmm/surat_magang/all/search?kueri=${this.surat_search}&page=${this.surats.current_page}`)
-      .then(response => {
-        this.surats = response.data.data;
-      })
-      .catch(error => {
-        console.log(error);
-        this.$store.dispatch('showErrorAlert', {
-            title: 'Gagal mengambil instansi',
-            message: error.response.status
+    suratSearch(offset, limit, order, sort) {
+      this.surat.isLoading = true;
+      let page = offset / limit + 1;
+      let url = `${window.location.origin}/api/kmm/surat_magang/all?kueri=${this.searchSurat}&page=${page}&limit=${limit}&order=${order}&sort=${sort}`;
+      axios.get(url)
+      .then((response) => {
+        this.surat.research = false;
+        this.surat.rows = response.data.data.data;
+        let pagination = (response.data.data.current_page - 1) * response.data.data.per_page;
+        this.surat.rows.forEach((item, index) => {
+          item.index = index + 1 + pagination;
         });
+        this.surat.totalRecordCount = response.data.data.total;
+        this.surat.page = {
+          limit: limit, 
+          offset: offset,
+        };
+        this.surat.sortable = {
+          order: order,
+          sort: sort
+        };
+        this.surat.isLoading = false;
       });
     },
     getSurats() {
-      axios.get(`${window.location.origin}/api/kmm/surat_magang/all?page=${this.surats.current_page}`)
-      .then(response => {
-        this.surats = response.data.data;
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      this.searchSurat = document?.getElementById('searchSurat')?.value ?? this.searchSurat;
+      this.surat.totalRecordCount = 0;
+      this.surat.rows = [];
+      this.surat.page = {
+        limit: 10,
+        offset: 0
+      };
+      this.surat.research = true;
+      this.suratSearch(this.surat.page.offset, this.surat.page.limit, this.surat.sortable.order, this.surat.sortable.sort);
     },
-    getJawabanBySearch(first = false) {
-      if (this.jawaban_search == '') {
-        this.jawaban_search_on = false;
-        this.getJawaban();
-        return;
-      }
-      if (first) {
-        this.jawaban_search_on = true;
-        this.jawabans.current_page = 1;
-        this.jawabans.data = [];
-      }
-      axios.get(`${window.location.origin}/api/kmm/surat_jawaban/all/search?kueri=${this.jawaban_search}&page=${this.jawabans.current_page}`)
-      .then(response => {
-        this.jawabans = response.data.data;
-      })
-      .catch(error => {
-        console.log(error);
-        this.$store.dispatch('showErrorAlert', {
-            title: 'Gagal mengambil instansi',
-            message: error.response.status
+    jawabanSearch(offset, limit, order, sort) {
+      this.jawaban.isLoading = true;
+      let page = offset / limit + 1;
+      let url = `${window.location.origin}/api/kmm/surat_jawaban/all?kueri=${this.searchJawaban}&page=${page}&limit=${limit}&order=${order}&sort=${sort}`;
+      axios.get(url)
+      .then((response) => {
+        this.jawaban.research = false;
+        this.jawaban.rows = response.data.data.data;
+        let pagination = (response.data.data.current_page - 1) * response.data.data.per_page;
+        this.jawaban.rows.forEach((item, index) => {
+          item.index = index + 1 + pagination;
         });
+        this.jawaban.totalRecordCount = response.data.data.total;
+        this.jawaban.page = {
+          limit: limit, 
+          offset: offset,
+        };
+        this.jawaban.sortable = {
+          order: order,
+          sort: sort
+        };
+        this.jawaban.isLoading = false;
       });
     },
     getJawabans() {
-      axios.get(`${window.location.origin}/api/kmm/surat_jawaban/all?page=${this.jawabans.current_page}`)
-      .then(response => {
-        this.jawabans = response.data.data;
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      this.searchJawaban = document?.getElementById('searchJawaban')?.value ?? this.searchJawaban;
+      this.jawaban.totalRecordCount = 0;
+      this.jawaban.rows = [];
+      this.jawaban.page = {
+        limit: 10,
+        offset: 0
+      };
+      this.jawaban.research = true;
+      this.jawabanSearch(this.jawaban.page.offset, this.jawaban.page.limit, this.jawaban.sortable.order, this.jawaban.sortable.sort);
     },
     approve(item) {
       this.$store.dispatch('showLoadingAlert');

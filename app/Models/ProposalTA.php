@@ -41,8 +41,15 @@ class ProposalTA extends Model
         return $this->belongsToMany(JadwalPropTA::class, 'jadwal_proposal_ta_mahasiswa', 'proposal_ta_id', 'jadwal_proposal_ta_id');
     }
 
-    public function pembimbingTa()
+    public function magang()
     {
-        return $this->belongsToMany(Magang::class, 'pembimbing_ta', 'proposal_ta_id', 'id_magang');
+        return $this->hasOneThrough(
+            Magang::class,
+            PembimbingTa::class,
+            'proposal_ta_id', // Foreign key on PembimbingTa table...
+            'id_magang', // Foreign key on Magang table...
+            'id', // Local key on ProposalTa table...
+            'id_magang' // Local key on PembimbingTa table...
+        );
     }
 }

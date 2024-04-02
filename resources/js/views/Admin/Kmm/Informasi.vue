@@ -52,59 +52,41 @@
       <CCol :md="7">
         <CCard class="mb-4">
           <CCardHeader class="row">
-            <div class="col-8">
+            <p class="col-6">Daftar Instansi</p>
+            <!--search bar-->
+            <div class="col-6">
               <CInputGroup>
-                <CFormInput type="text" placeholder="Search" id="search" v-model="search" @keyup.enter="getInformasiBySearch(true)"/>
-                <CInputGroupText @click="getInformasiBySearch(true)" class="cursor-pointer">
+                <CFormInput type="text" placeholder="Search" id="search" :value="search" @keyup.enter="getInformasis"/>
+                <CInputGroupText @click="getInformasis" class="cursor-pointer">
                   <font-awesome-icon :icon="['fas', 'search']" />
                 </CInputGroupText>
               </CInputGroup>
             </div>
-            <div class="col-4 mt-2 text-right right">
-              <pagination v-if="!search_on"
-                :pagination="informasis"
-                @paginate="getInformasis()"
-                :offset="4">
-              </pagination>
-              <pagination v-if="search_on"
-                :pagination="informasis"
-                @paginate="getInformasiBySearch(false)"
-                :offset="4">
-              </pagination>
-            </div>
           </CCardHeader>
           <CCardBody>
-            <CTable align="middle" class="mb-0 border" hover responsive>
-              <CTableHead color="light">
-                <CTableRow>
-                  <CTableHeaderCell class="text-center">
-                    #
-                  </CTableHeaderCell>
-                  <CTableHeaderCell>Judul Informasi</CTableHeaderCell>
-                  <CTableHeaderCell>Actions</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody v-if="informasis.data.length > 0">
-                <CTableRow v-for="(informasi, index) in informasis.data" :key="informasi.id_informasi">
-                  <CTableDataCell class="text-center">
-                      {{ index + 1 }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    {{ informasi.judul }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <CButton color="primary" @click="openDetailModal(informasi)">Detail</CButton>
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-              <CTableBody v-else>
-                <CTableRow>
-                  <CTableDataCell class="text-center" colspan="4">
-                    {{ itemstatus }}
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-            </CTable>
+            <table-lite
+                class="table-lite"
+                :is-slot-mode="true"
+                :is-re-search="informasi.research"
+                :is-loading="informasi.isLoading"
+                :columns="informasi.columns"
+                :rows="informasi.rows"
+                :total="informasi.totalRecordCount"
+                :sortable="informasi.sortable"
+                :messages="informasi.messages"
+                @do-search="informasiSearch"
+            >
+              <template v-slot:id_informasi="data">
+                {{ data.value.index }}
+              </template>
+              <template v-slot:status_publikasi="data">
+                <CBadge v-if="data.value.status_publikasi == 1" color="success">dipublish</CBadge>
+                <CBadge v-if="data.value.status_publikasi == 0" color="secondary">draft</CBadge>
+              </template>
+              <template v-slot:none="data">
+                <CButton color="primary" @click="openDetailModal(data.value)">Detail</CButton>
+              </template>
+            </table-lite>
           </CCardBody>
         </CCard>
       </CCol>
@@ -202,10 +184,6 @@
 </template>
 
 <style scoped>
-  .right {
-    display: flex;
-    justify-content: flex-end;
-  }
   .dokumen-link {
     color: #000;
     text-decoration: none;
@@ -215,30 +193,104 @@
     margin: 0 2px;
     font-size: 0.8rem;
     font-weight: 1000;
-}
+  }
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .table-header {
+    background: #f0f2f4;
+    color: rgba(44, 56, 74, 0.95);
+    border: 1px solid rgba(200, 204, 209, 0.99);
+  }
+
+  :deep(table.vtl-table) {
+    display: table !important;
+  }
 </style>
 
 <script>
-import pagination from '@/components/Pagination.vue';
-
 export default {
   name: 'Informasi',
-  components: {
-    pagination
-  },
   data() {
     return {
-      search_on: false,
-      search: '',
-      offset: 4,
-      informasis: {
-        total: 0,
-        per_page: 2,
-        from: 1,
-        to: 0,
-        current_page: 1,
-        data: []
+      informasi: {
+        isLoading: false,
+        columns : [
+          {
+            label: "#",
+            field: "id_informasi",
+            headerClasses: ["table-header","text-center"],
+            columnClasses: ["text-center"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "10%",
+            sortable: true,
+            isKey: true,
+          },
+          {
+            label: "Judul Informasi",
+            field: "judul",
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "50%",
+            sortable: true,
+          },
+          {
+            label: "Status Publikasi",
+            field: "status_publikasi",
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "25%",
+            sortable: true,
+          },
+          {
+            label: "Action",
+            field: "none",
+            width: "15%",
+            sortable: false,
+            headerClasses: ["table-header", "text-center"],
+            columnClasses: ["text-center"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            }
+          },
+        ],
+        rows: [],
+        totalRecordCount: 0,
+        sortable: {
+          order: "id_informasi",
+          sort: "desc"
+        },
+        messages: {
+          pagingInfo: "{0}-{1}/{2}",
+          pageSizeChangeLabel: "Per Halaman ",
+          gotoPageLabel: " Ke Hal. ",
+          noDataAvailable: "Tidak ada data",
+        },
+        page: {
+          limit: 10,
+          offset: 0
+        },
+        research: false
       },
+      search: '',
       form: {
         judul: '',
         deskripsi: '',
@@ -300,39 +352,44 @@ export default {
     });
   },
   methods: {
-    getInformasiBySearch(first = false) {
-      if (this.search == '') {
-        this.search_on = false;
-        this.getInformasis();
-        return;
-      }
-      if (first) {
-        this.search_on = true;
-        this.informasis.current_page = 1;
-        this.informasis.data = [];
-      }
-      axios.get(`${this.app}/api/kmm/informasi/search?kueri=${this.search}&page=${this.informasis.current_page}`)
-      .then(response => {
-        this.informasis = response.data.data;
-      })
-      .catch(error => {
-        console.log(error);
-        this.$store.dispatch('showErrorAlert', {
-            title: 'Gagal mengambil instansi',
-            message: error.response.status
+    informasiSearch(offset, limit, order, sort) {
+      this.informasi.isLoading = true;
+      //calculate page based on offset and limit
+      let page = offset / limit + 1;
+      let url = `${window.location.origin}/api/kmm/informasi/all?kueri=${this.search}&page=${page}&limit=${limit}&order=${order}&sort=${sort}`;
+      axios.get(url)
+      .then((response) => {
+        this.informasi.research = false;
+        console.log(this.search == '' ? '[kosong]' : this.search);
+        this.informasi.rows = response.data.data.data;
+        //add iteration index and push to rows as 'index'
+        let pagination = (response.data.data.current_page - 1) * response.data.data.per_page;
+        this.informasi.rows.forEach((item, index) => {
+          //calculate index based on current page
+          item.index = index + 1 + pagination;
         });
+        this.informasi.totalRecordCount = response.data.data.total;
+        this.informasi.page = {
+          limit: limit, 
+          offset: offset,
+        };
+        this.informasi.sortable = {
+          order: order,
+          sort: sort
+        };
+        this.informasi.isLoading = false;
       });
     },
     getInformasis() {
-      axios.get(`${this.app}/api/kmm/informasi/all?page=${this.informasis.current_page}`)
-      .then(response => {
-        this.informasis = response.data.data;
-        console.log(this.informasis.data.length);
-      })
-      .catch(error => {
-        this.itemstatus = error.response.data.message;
-        console.log(error);
-      });
+      this.search = document?.getElementById('search')?.value ?? this.search;
+      this.informasi.totalRecordCount = 0;
+      this.informasi.rows = [];
+      this.informasi.page = {
+        limit: 10,
+        offset: 0
+      };
+      this.informasi.research = true;
+      this.informasiSearch(this.informasi.page.offset, this.informasi.page.limit, this.informasi.sortable.order, this.informasi.sortable.sort);
     },
     addItem(status_publikasi = false) {
       let formData = new FormData();

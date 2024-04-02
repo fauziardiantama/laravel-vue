@@ -50,65 +50,37 @@
       <CCol :md="12">
         <CCard class="mb-4">
           <CCardHeader class="row">
-            <p class="col-2">Daftar Dosen</p>
+            <p class="col-6">Daftar Dosen</p>
             <!--search bar-->
             <div class="col-6">
               <CInputGroup>
-                <CFormInput type="text" placeholder="Search" id="search" v-model="search" @keyup.enter="getDosenBySearch(true)"/>
-                <CInputGroupText @click="getDosenBySearch(true)" class="cursor-pointer">
+                <CFormInput type="text" placeholder="Search" id="search" :value="search" @keyup.enter="getDosens"/>
+                <CInputGroupText @click="getDosens" class="cursor-pointer">
                   <font-awesome-icon :icon="['fas', 'search']" />
                 </CInputGroupText>
               </CInputGroup>
             </div>
-            <div class="col-4 mt-2 text-right right">
-              <pagination v-if="!search_on"
-                :pagination="getDosens"
-                @paginate="getDosens()"
-                :offset="4">
-              </pagination>
-              <pagination v-if="search_on"
-                :pagination="dosens"
-                @paginate="getDosensBySearch(false)"
-                :offset="4">
-              </pagination>
-            </div>
           </CCardHeader>
           <CCardBody>
-            <CTable align="middle" class="mb-0 border" hover responsive>
-              <CTableHead color="light">
-                <CTableRow>
-                  <CTableHeaderCell class="text-center">
-                    #
-                  </CTableHeaderCell>
-                  <CTableHeaderCell>NIK</CTableHeaderCell>
-                  <CTableHeaderCell>Nama</CTableHeaderCell>
-                  <CTableHeaderCell>Actions</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody v-if="dosens.data.length > 0">
-                <CTableRow v-for="(dosen, index) in dosens.data" :key="dosen.id_dosen">
-                  <CTableDataCell class="text-center">
-                    {{ index + 1 + (dosens.current_page - 1) * dosens.per_page }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    {{ dosen.nik }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    {{ dosen.nama }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <CButton color="primary" @click="openDetailModal(dosen)">Detail</CButton>
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-              <CTableBody v-else>
-                <CTableRow>
-                  <CTableDataCell class="text-center" colspan="4">
-                    {{ itemstatus }}
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-            </CTable>
+            <table-lite
+              class="table-lite"
+              :is-slot-mode="true"
+              :is-re-search="dosen.research"
+              :is-loading="dosen.isLoading"
+              :columns="dosen.columns"
+              :rows="dosen.rows"
+              :total="dosen.totalRecordCount"
+              :sortable="dosen.sortable"
+              :messages="dosen.messages"
+              @do-search="dosenSearch"
+            >
+                <template v-slot:id_dosen="data">
+                  {{ data.value.index }}
+                </template>
+                <template v-slot:none="data">
+                  <CButton color="primary" @click="openDetailModal(data.value)">Detail</CButton>
+                </template>
+            </table-lite>
           </CCardBody>
         </CCard>
       </CCol>
@@ -194,10 +166,6 @@
 </template>
 
 <style scoped>
-  .right {
-    display: flex;
-    justify-content: flex-end;
-  }
   .dokumen-link {
     color: #000;
     text-decoration: none;
@@ -207,30 +175,104 @@
     margin: 0 2px;
     font-size: 0.8rem;
     font-weight: 1000;
-}
+  }
+  .cursor-pointer {
+    cursor: pointer;
+  }
+  .table-header {
+    background: #f0f2f4;
+    color: rgba(44, 56, 74, 0.95);
+    border: 1px solid rgba(200, 204, 209, 0.99);
+  }
+
+  :deep(table.vtl-table) {
+    display: table !important;
+  }
 </style>
 
 <script>
-import pagination from '@/components/Pagination.vue';
-
 export default {
   name: 'Dosen',
-  components: {
-    pagination
-  },
   data() {
     return {
-      search_on: false,
-      search: '',
-      dosens: {
-        total: 0,
-        per_page: 2,
-        from: 1,
-        to: 0,
-        current_page: 1,
-        data: []
+      dosen: {
+        isLoading: false,
+        columns: [
+          {
+            label: "#",
+            field: "id_dosen",
+            headerClasses: ["table-header","text-center"],
+            columnClasses: ["text-center"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "10%",
+            sortable: true,
+            isKey: true,
+          },
+          {
+            label: "NIK",
+            field: "nik",
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "35%",
+            sortable: true,
+          },
+          {
+            label: "Nama",
+            field: "nama",
+            headerClasses: ["table-header"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "40%",
+            sortable: true,
+          },
+          {
+            label: "Action",
+            field: "none",
+            headerClasses: ["table-header", "text-center"],
+            columnClasses: ["text-center"],
+            headerStyles: 
+            {
+              background: "#f0f2f4",
+              color: "rgba(44, 56, 74, 0.95)",
+              border: "1px solid rgba(200, 204, 209, 0.99)",
+            },
+            width: "15%",
+            sortable: false,
+          }
+        ],
+        rows: [],
+        totalRecordCount: 0,
+        sortable: {
+          order: "id_dosen",
+          sort: "asc",
+        },
+        messages: {
+            pagingInfo: "{0}-{1}/{2}",
+            pageSizeChangeLabel: "Per Halaman ",
+            gotoPageLabel: " Ke Hal. ",
+            noDataAvailable: "Tidak ada data",
+        },
+        page: {
+          limit: 10,
+          offset: 0
+        },
+        research: false
       },
-      offset: 4,
+      search: '',
       createItem: {
         nama: '',
         email: '',
@@ -238,7 +280,6 @@ export default {
         password: '',
         password_confirmation: ''
       },
-      itemstatus: 'Mengambil items',
       showDetailModal: false,
       activeDosen: {
         nik: '',
@@ -358,37 +399,44 @@ export default {
     });
   },
   methods: {
-    getDosenBySearch(first = false) {
-      if (this.search == '') {
-        this.search_on = false;
-        this.getDosens();
-        return;
-      }
-      if (first) {
-        this.search_on = true;
-        this.dosens.current_page = 1;
-        this.dosens.data = [];
-      }
-      axios.get(`${window.location.origin}/api/kmm/dosen?kueri=${this.search}&page=${this.dosens.current_page}`)
-      .then(response => {
-        this.dosens = response.data.data;
-      })
-      .catch(error => {
-        console.log(error);
-        this.$store.dispatch('showErrorAlert', {
-            title: 'Gagal mengambil instansi',
-            message: error.response.status
+    dosenSearch(offset, limit, order, sort) {
+      this.dosen.isLoading = true;
+      //calculate page based on offset and limit
+      let page = offset / limit + 1;
+      let url = `${window.location.origin}/api/kmm/dosen?kueri=${this.search}&page=${page}&limit=${limit}&order=${order}&sort=${sort}`;
+      axios.get(url)
+      .then((response) => {
+        this.dosen.research = false;
+        console.log(this.search == '' ? '[kosong]' : this.search);
+        this.dosen.rows = response.data.data.data;
+        //add iteration index and push to rows as 'index'
+        let pagination = (response.data.data.current_page - 1) * response.data.data.per_page;
+        this.dosen.rows.forEach((item, index) => {
+          //calculate index based on current page
+          item.index = index + 1 + pagination;
         });
+        this.dosen.totalRecordCount = response.data.data.total;
+        this.dosen.page = {
+          limit: limit, 
+          offset: offset,
+        };
+        this.dosen.sortable = {
+          order: order,
+          sort: sort
+        };
+        this.dosen.isLoading = false;
       });
     },
     getDosens() {
-      axios.get(`${window.location.origin}/api/kmm/dosen?page=${this.dosens.current_page}`)
-      .then(response => {
-        this.dosens = response.data.data;
-      })
-      .catch(error => {
-        console.log(error);
-      });
+      this.search = document?.getElementById('search')?.value ?? this.search;
+      this.dosen.totalRecordCount = 0;
+      this.dosen.rows = [];
+      this.dosen.page = {
+        limit: 10,
+        offset: 0
+      };
+      this.dosen.research = true;
+      this.dosenSearch(this.dosen.page.offset, this.dosen.page.limit, this.dosen.sortable.order, this.dosen.sortable.sort);
     },
     openDetailModal(item) {
       this.activeDosen = {

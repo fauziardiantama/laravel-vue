@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 use Jstewmc\Rtf\Document;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\baseMail;
+use App\Models\Magang;
 
 class SuratMagangController extends Controller
 {
@@ -59,10 +60,82 @@ class SuratMagangController extends Controller
 
     public function indexPaginate()
     {
-        $suratMagang = SuratMagang::orderBy('id_surat', 'DESC')->with('magang')->paginate(10);
+        $jenisMapping = [
+            "serah" => 2,
+            "terima" => 2,
+            "pengajuan" => 1,
+            "pengantar" => 1,
+        ];
+
+        $statusMapping = [
+            "sudah" => 1,
+            "belum" => 0,
+            "sudah mengajukan" => 1,
+            "belum mengajukan" => 0,
+        ];
+
+        $order = request()->order ?: 'id_surat';
+        $sort = request()->sort ?: 'asc';
+        $limit = request()->limit ?: 10;
+
+        $query = SuratMagang::query();
+
+        if ($order == 'nim' || $order == 'status_pengajuan_instansi')
+        {
+            $query->addSelect([
+                $order => Magang::select($order)
+                ->whereColumn('id_magang', 'surat_magang.id_magang')
+                ->limit(1)
+            ]);
+            $query->orderBy($order, $sort);
+        } else {
+            $query->orderBy($order, $sort);
+        }
+        
+        if (array_key_exists(strtolower(request()->kueri), $jenisMapping)) {
+            $query->where('jenis_surat', $jenisMapping[request()->kueri]);
+        } else if (array_key_exists(strtolower(request()->kueri), $statusMapping)) {
+            $query->whereHas('magang', function ($query) use ($statusMapping) {
+                $query->where('status_pengajuan_instansi', $statusMapping[request()->kueri]);
+            });
+        } else {
+            $query->where(function ($query) {
+                $query->whereHas('magang', function ($query) {
+                    $query->where('tahun', 'like', '%'.request()->kueri.'%')
+                    ->orWhereHas('mahasiswa', function ($query) {
+                        $query->where('mahasiswa.nim', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('mahasiswa.nama', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('mahasiswa.email', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('mahasiswa.no_telp', 'like', '%'.request()->kueri.'%');
+                    })
+                    ->orWhereHas('topik', function ($query) {
+                        $query->where('topik_kmm.nama_topik', 'like', '%'.request()->kueri.'%');    
+                    })
+                    ->orWhereHas('instansi', function ($query) {
+                        $query->where('instansi.nama', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('instansi.alamat', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('instansi.email', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('instansi.no_telp', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('instansi.web', 'like', '%'.request()->kueri.'%');
+                    })
+                    ->orWhereHas('dosen', function ($query) {
+                        $query->where('dosen.nik', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('dosen.nama', 'like', '%'.request()->kueri.'%')
+                        ->orWhere('dosen.email', 'like', '%'.request()->kueri.'%');
+                    })
+                    ->orWhereHas('progres', function ($query) {
+                        $query->where('progres.progres', 'like', '%'.request()->kueri.'%');
+                    });
+                })
+                ->orWhere('file_surat', 'like', "%" . request()->kueri . "%")
+                ->orWhere('nomor_surat', 'like', "%" . request()->kueri . "%");
+            });
+        }
+
+        $suratMagang = $query->with('magang.mahasiswa')->paginate($limit);
 
         return response()->json([
-            'message' => 'Berhasil menampilkan semua surat magang',
+            'message' => 'Berhasil menampilkan surat magang',
             'data' => $suratMagang
         ]);
     }

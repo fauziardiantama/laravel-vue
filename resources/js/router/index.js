@@ -123,14 +123,24 @@ const routes = [
                         component: () => import('@/views/Mahasiswa/Ta/Pembimbing.vue'),
                     },
                     {
-                        path: 'jadwal',
-                        name: 'MahasiswaTaJadwal',
+                        path: 'jadwal-proposal',
+                        name: 'MahasiswaTaJadwalProposal',
                         meta: {
-                          title: 'Jadwal',
+                          title: 'Jadwal Proposal',
                           actived: true,
                           dashboard: 'MahasiswaTaDashboard'
                         },
                         component: () => import('@/views/Mahasiswa/Ta/JadwalProposal.vue'),
+                    },
+                    {
+                        path: 'bimbingan',
+                        name: 'MahasiswaTaBimbingan',
+                        meta: {
+                          title: 'Bimbingan',
+                          actived: true,
+                          dashboard: 'MahasiswaTaDashboard'
+                        },
+                        component: () => import('@/views/Mahasiswa/Ta/Bimbingan.vue'),
                     }
                 ]
             },
@@ -172,6 +182,16 @@ const routes = [
                           dashboard: 'MahasiswaKmmDashboard'
                         },
                         component: () => import('@/views/Mahasiswa/Kmm/Dokumen.vue'),
+                    },
+                    {
+                        path: 'bimbingan',
+                        name: 'MahasiswaKmmBimbingan',
+                        meta: {
+                          title: 'Bimbingan',
+                          actived: true,
+                          dashboard: 'MahasiswaKmmDashboard'
+                        },
+                        component: () => import('@/views/Mahasiswa/Kmm/Bimbingan.vue'),
                     }
                 ]
             }
@@ -217,10 +237,18 @@ const routes = [
                         component: () => import('@/views/Dosen/Ta/Dashboard.vue'),
                     },
                     {
-                        path: 'jadwal',
-                        name: 'DosenTaJadwal',
+                        path: 'bimbingan',
+                        name: 'DosenTaBimbingan',
                         meta: {
-                          title: 'Jadwal'
+                          title: 'Bimbingan'
+                        },
+                        component: () => import('@/views/Dosen/Ta/Bimbingan.vue'),
+                    },
+                    {
+                        path: 'jadwal-proposal',
+                        name: 'DosenTaJadwalProposal',
+                        meta: {
+                          title: 'Jadwal Proposal'
                         },
                         component: () => import('@/views/Dosen/Ta/JadwalProposal.vue'),
                     },
@@ -320,10 +348,18 @@ const routes = [
                         component: () => import('@/views/Admin/Ta/Proposal.vue'),
                     },
                     {
-                        path: 'jadwal',
-                        name: 'AdminTaJadwal',
+                        path: 'bimbingan',
+                        name: 'AdminTaBimbingan',
                         meta: {
-                          title: 'Jadwal'
+                          title: 'Bimbingan'
+                        },
+                        component: () => import('@/views/Admin/Ta/Bimbingan.vue'),
+                    },
+                    {
+                        path: 'jadwal-proposal',
+                        name: 'AdminTaJadwalProposal',
+                        meta: {
+                          title: 'Jadwal Proposal'
                         },
                         component: () => import('@/views/Admin/Ta/JadwalProposal.vue'),
                     },

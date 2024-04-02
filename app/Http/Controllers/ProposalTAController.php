@@ -28,7 +28,52 @@ class ProposalTAController extends Controller
             $proposal->token_expired = now()->addHours(2);
             $proposal->save();
         } else {
-            $proposal = ProposalTA::orderBy('tahun', 'asc')->with('mahasiswa')->paginate(10);
+            $semesterMapping = [
+                "ganjil" => 1,
+                "genap" => 2
+            ];
+            $statusMapping = [
+                "disetujui" => 1,
+                "diterima" => 1,
+                "ditolak" => -1,
+                "menunggu" => 0
+            ];
+            $order = request()->order ?: 'id';
+            $sort = request()->sort ?: 'asc';
+            $limit = request()->limit ?: 10;
+
+            $query = ProposalTA::query();
+
+            if ($order == 'nama')
+            {
+                $query->addSelect([
+                    $order => Mahasiswa::select('nama')
+                    ->whereColumn('nim', 'proposal_ta.nim')
+                    ->limit(1)
+                ]);
+                $query->orderBy($order, $sort);
+            } else {
+                $query->orderBy($order, $sort);
+            }
+
+            if (array_key_exists(strtolower(request()->kueri), $semesterMapping)) {
+                $query->where('semester_id', $semesterMapping[strtolower(request()->kueri)]);
+            } else if (array_key_exists(strtolower(request()->kueri), $statusMapping)) {
+                $query->where('status_proposal', $statusMapping[strtolower(request()->kueri)]);
+            } else {
+                $query->where(function ($query) {
+                    $query->whereHas('mahasiswa', function ($query) {
+                        $query->where('nama', 'like', '%'.request()->kueri.'%');
+                    })
+                    ->orWhere('nim', 'like', '%'.request()->kueri.'%')
+                    ->orWhere('judul_proposal', 'like', '%'.request()->kueri.'%')
+                    ->orWhere('tahun', 'like', '%'.request()->kueri.'%')
+                    ->orWhere('file_proposal', 'like', '%'.request()->kueri.'%');
+                });
+            }
+
+           $proposal = $query->with(['mahasiswa', 'magang.dosen'])->paginate($limit);
+ 
 			if ($proposal->isEmpty() == true) {
                 return response()->json([
                     'message' => 'Proposal tidak ditemukan'

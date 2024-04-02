@@ -21,7 +21,35 @@ class InformasiController extends Controller
 
     public function indexPagination()
     {
-        $informasi = Informasi::orderBy('tanggal', 'desc')->paginate(10);
+        $statusPublikasi = [
+            "publish" => 1,
+            "unpublish" => 0,
+            "belum publish" => 0,
+            "draft" => 0,
+            "sudah publish" => 1,
+            "sudah dipublikasikan" => 1,
+            "belum dipublikasikan" => 0,
+            "published" => 1,
+            "unpublished" => 0,
+            "publikasi" => 1
+        ];
+
+        $order = request()->order ?: 'id_informasi';
+        $sort = request()->sort ?: 'desc';
+        $limit = request()->limit ?: 10;
+
+        $query = Informasi::query();
+        $query->orderBy($order, $sort);
+        if (array_key_exists(strtolower(request()->kueri), $statusPublikasi)) {
+            $query->where('status_publikasi', $statusPublikasi[request()->kueri]);
+        } else {
+            $query->where(function ($query){
+                $query->where('judul', 'like', '%'.request()->kueri.'%')
+                ->orWhere('deskripsi', 'like', '%'.request()->kueri.'%')
+                ->orWhere('tanggal', 'like', '%'.request()->kueri.'%');
+            });
+        }
+        $informasi = $query->paginate($limit);
         return response()->json([
             'message' => 'Berhasil menampilkan data',
             'data' => $informasi

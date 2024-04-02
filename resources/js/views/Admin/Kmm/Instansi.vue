@@ -55,65 +55,42 @@
       <CCol :md="12">
         <CCard class="mb-4">
           <CCardHeader class="row">
-            <p class="col-2">Daftar Instansi</p>
+            <p class="col-6">Daftar Instansi</p>
             <!--search bar-->
             <div class="col-6">
               <CInputGroup>
-                <CFormInput type="text" placeholder="Search" id="search" v-model="search" @keyup.enter="getInstansiBySearch(true)"/>
-                <CInputGroupText @click="getInstansiBySearch(true)" class="cursor-pointer">
+                <CFormInput type="text" placeholder="Search" id="search" :value="search" @keyup.enter="getInstansis"/>
+                <CInputGroupText @click="getInstansis" class="cursor-pointer">
                   <font-awesome-icon :icon="['fas', 'search']" />
                 </CInputGroupText>
               </CInputGroup>
             </div>
-            <div class="col-4 mt-2 text-right right">
-              <pagination v-if="!search_on"
-                :pagination="instansis"
-                @paginate="getInstansis()"
-                :offset="4">
-              </pagination>
-              <pagination v-if="search_on"
-                :pagination="instansis"
-                @paginate="getInstansiBySearch(false)"
-                :offset="4">
-              </pagination>
-            </div>
           </CCardHeader>
           <CCardBody>
-            <CTable align="middle" class="mb-0 border" hover responsive>
-              <CTableHead color="light">
-                <CTableRow>
-                  <CTableHeaderCell class="text-center">
-                    #
-                  </CTableHeaderCell>
-                  <CTableHeaderCell>Nama</CTableHeaderCell>
-                  <CTableHeaderCell>Status</CTableHeaderCell>
-                  <CTableHeaderCell>Actions</CTableHeaderCell>
-                </CTableRow>
-              </CTableHead>
-              <CTableBody v-if="instansis.data.length > 0">
-                <CTableRow v-for="(instansi, index) in instansis.data" :key="instansi.id_instansi">
-                  <CTableDataCell class="text-center">
-                    {{ index + 1 + (instansis.current_page - 1) * instansis.per_page }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    {{ instansi.nama }}
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <CBadge v-if="instansi.status_instansi == 1" color="success">disetujui</CBadge><CBadge v-if="instansi.status_instansi == 2" color="danger">Ditolak</CBadge><CBadge v-if="instansi.status_instansi == 0" color="warning">Menunggu</CBadge>
-                  </CTableDataCell>
-                  <CTableDataCell>
-                    <CButton color="primary" @click="openDetailModal(instansi)">Detail</CButton>
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-              <CTableBody v-else>
-                <CTableRow>
-                  <CTableDataCell class="text-center" colspan="4">
-                    {{ itemstatus }}
-                  </CTableDataCell>
-                </CTableRow>
-              </CTableBody>
-            </CTable>
+              <table-lite
+                  class="table-lite"
+                  :is-slot-mode="true"
+                  :is-re-search="instansi.research"
+                  :is-loading="instansi.isLoading"
+                  :columns="instansi.columns"
+                  :rows="instansi.rows"
+                  :total="instansi.totalRecordCount"
+                  :sortable="instansi.sortable"
+                  :messages="instansi.messages"
+                  @do-search="instansiSearch"
+              >
+                <template v-slot:id_instansi="data">
+                  {{ data.value.index }}
+                </template>
+                <template v-slot:status_instansi="data">
+                  <CBadge v-if="data.value.status_instansi == 1" color="success">disetujui</CBadge>
+                  <CBadge v-if="data.value.status_instansi == 2" color="danger">Ditolak</CBadge>
+                  <CBadge v-if="data.value.status_instansi == 0" color="warning">Menunggu</CBadge>
+                </template>
+                <template v-slot:none="data">
+                  <CButton color="primary" @click="openDetailModal(data.value)">Detail</CButton>
+                </template>
+              </table-lite>
           </CCardBody>
         </CCard>
       </CCol>
@@ -212,10 +189,6 @@
 </template>
 
 <style scoped>
-  .right {
-    display: flex;
-    justify-content: flex-end;
-  }
   .dokumen-link {
     color: #000;
     text-decoration: none;
@@ -229,29 +202,102 @@
   .cursor-pointer {
     cursor: pointer;
   }
+  .table-header {
+    background: #f0f2f4;
+    color: rgba(44, 56, 74, 0.95);
+    border: 1px solid rgba(200, 204, 209, 0.99);
+  }
+
+  :deep(table.vtl-table) {
+    display: table !important;
+  }
 </style>
 
 <script>
-import pagination from '@/components/Pagination.vue';
 
 export default {
   name: 'Instansi',
-  components: {
-    pagination
-  },
   data() {
     return {
-      search_on: false,
-      search: '',
-      instansis: {
-        total: 0,
-        per_page: 2,
-        from: 1,
-        to: 0,
-        current_page: 1,
-        data: []
+      instansi: {
+          isLoading: false,
+          columns: [
+              {
+                  label: "#",
+                  field: "id_instansi",
+                  headerClasses: ["table-header","text-center"],
+                  columnClasses: ["text-center"],
+                  headerStyles: 
+                  {
+                    background: "#f0f2f4",
+                    color: "rgba(44, 56, 74, 0.95)",
+                    border: "1px solid rgba(200, 204, 209, 0.99)",
+                  },
+                  width: "10%",
+                  sortable: true,
+                  isKey: true,
+              },
+              {
+                  label: "Nama",
+                  field: "nama",
+                  headerClasses: ["table-header"],
+                  headerStyles: 
+                  {
+                    background: "#f0f2f4",
+                    color: "rgba(44, 56, 74, 0.95)",
+                    border: "1px solid rgba(200, 204, 209, 0.99)",
+                  },
+                  width: "50%",
+                  sortable: true,
+              },
+              {
+                  label: "Status",
+                  field: "status_instansi",
+                  headerClasses: ["table-header", "text-center"],
+                  columnClasses: ["text-center"],
+                  headerStyles: 
+                  {
+                    background: "#f0f2f4",
+                    color: "rgba(44, 56, 74, 0.95)",
+                    border: "1px solid rgba(200, 204, 209, 0.99)",
+                  },
+                  width: "25%",
+                  sortable: true
+              },
+              {
+                  label: "Action",
+                  field: "none",
+                  width: "15%",
+                  sortable: false,
+                  headerClasses: ["table-header", "text-center"],
+                  columnClasses: ["text-center"],
+                  headerStyles: 
+                  {
+                    background: "#f0f2f4",
+                    color: "rgba(44, 56, 74, 0.95)",
+                    border: "1px solid rgba(200, 204, 209, 0.99)",
+                  }
+              },
+          ],
+          rows: [],
+          totalRecordCount: 0,
+          sortable: {
+              order: "id_instansi",
+              sort: "desc",
+          },
+          messages: {
+            pagingInfo: "{0}-{1}/{2}",
+            pageSizeChangeLabel: "Per Halaman ",
+            gotoPageLabel: " Ke Hal. ",
+            noDataAvailable: "Tidak ada data",
+          },
+          page: {
+            limit: 10,
+            offset: 0
+          },
+          research: false
       },
-      offset: 4,
+      search: '',
       createItem: {
         nama: '',
         email: '',
@@ -259,7 +305,6 @@ export default {
         no_telp: '',
         web: ''
       },
-      itemstatus: 'Mengambil items',
       showDetailModal: false,
       activeInstansi: {
         id : 0,
@@ -318,42 +363,10 @@ export default {
   },
   async created() {
     this.getInstansis();
-  },
-  mounted() {
-    console.log('Dashboard component mounted.');
-  },
-  methods: {
-    getInstansiBySearch(first = false) {
-      if (this.search == '') {
-        this.search_on = false;
-        this.getInstansis();
-        return;
-      }
-      if (first) {
-        this.search_on = true;
-        this.instansis.current_page = 1;
-        this.instansis.data = [];
-      }
-      axios.get(`${window.location.origin}/api/kmm/instansi/search?kueri=${this.search}&page=${this.instansis.current_page}`)
-      .then(response => {
-        this.instansis = response.data.data;
-      })
-      .catch(error => {
-        console.log(error);
-        this.$store.dispatch('showErrorAlert', {
-            title: 'Gagal mengambil instansi',
-            message: error.response.status
-        });
-      });
-    },
-    getInstansis() {
-      axios.get(`${window.location.origin}/api/kmm/instansi?page=${this.instansis.current_page}`)
-      .then(response => {
-        this.instansis = response.data.data;
-        Echo.private('Admin')
+    Echo.private('Admin')
         .listen("Inst", (e) => {
           console.log(e);
-          if (this.activeInstansi.id == e.item.id_instansi) {
+          if (this.activeInstansi?.id == e.item?.id_instansi) {
             if (e.type == "update") {
               this.openDetailModal(e.item);
             }
@@ -364,10 +377,52 @@ export default {
           }
           this.getInstansis();
         });
-      })
-      .catch(error => {
-        console.log(error);
+  },
+  mounted() {
+    console.log('Dashboard component mounted.');
+  },
+  methods: {
+    instansiSearch(offset, limit, order, sort) {
+      this.instansi.isLoading = true;
+      //calculate page based on offset and limit
+      let page = offset / limit + 1;
+      let url = `${window.location.origin}/api/kmm/instansi?kueri=${this.search}&page=${page}&limit=${limit}&order=${order}&sort=${sort}`;
+      axios.get(url)
+      .then((response) => {
+        this.instansi.research = false;
+        console.log(this.search == '' ? '[kosong]' : this.search);
+        this.instansi.rows = response.data.data.data;
+        //add iteration index and push to rows as 'index'
+        let pagination = (response.data.data.current_page - 1) * response.data.data.per_page;
+        this.instansi.rows.forEach((item, index) => {
+          //calculate index based on current page
+          item.index = index + 1 + pagination;
+        });
+        this.instansi.totalRecordCount = response.data.data.total;
+        this.instansi.page = {
+          limit: limit, 
+          offset: offset,
+        };
+        this.instansi.sortable = {
+          order: order,
+          sort: sort
+        };
+        this.instansi.isLoading = false;
       });
+    },
+    getInstansis() {
+      this.search = document?.getElementById('search')?.value ?? this.search;
+      this.instansi.totalRecordCount = 0;
+      this.instansi.rows = [];
+      this.instansi.page = {
+        limit: 10,
+        offset: 0
+      };
+      this.instansi.research = true;
+      this.instansiSearch(this.instansi.page.offset, this.instansi.page.limit, this.instansi.sortable.order, this.instansi.sortable.sort);
+    },
+    instansiLoadingFinish() {
+        this.instansi.isLoading = false;
     },
     openDetailModal(item) {
       this.activeInstansi = {
