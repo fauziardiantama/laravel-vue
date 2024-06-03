@@ -92,4 +92,19 @@ class Magang extends Model
     {
         return $this->hasMany(BimbinganInstansi::class, 'id_magang', 'id_magang');
     }
+
+    public function seminar()
+    {
+        return $this->hasOne(Seminar::class, 'id_magang', 'id_magang');
+    }
+
+    public function nilaiBimbingan()
+    {
+        return $this->hasMany(NilaiBimbingan::class, 'id_magang', 'id_magang');
+    }
+
+    public function nilaiSeminar()
+    {
+        return $this->hasOne(NilaiSeminar::class, 'id_magang', 'id_magang');
+    }
 }

@@ -63,7 +63,7 @@ class AuthController extends Controller
                             "attachments" => []
                         ]
                     ));
-                    event( new Mhs("store", ["Admin"], false, $mahasiswa));
+                    event( new Mhs("store", ["Admin"], false, $mahasiswa)); //Abaikan jika tidak menggunakan event
                     return response()->json([
                         'message' => 'Mahasiswa berhasil didaftarkan',
                         'mahasiswa' => $mahasiswa
@@ -104,6 +104,8 @@ class AuthController extends Controller
                     ], 401);
                 }
             }
+
+            //LOGIN MAHASISWA LARAVEL BIASA (Autentikasi Mandiri)
             auth()->guard('smahasiswa')->attempt(
                 [
                     'email' => $request['email'],
@@ -117,7 +119,7 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            //generate token
+            //LOGIN MAHASISWA JIKA PAKAI TOKEN
             $authuser = auth()->guard('smahasiswa')->user();
             $token = $authuser->auth()->first()->createToken('mahasiswa')->accessToken;
 
@@ -153,6 +155,8 @@ class AuthController extends Controller
                     $dosen->save();
                 }
             }
+
+            //LOGIN DOSEN LARAVEL BIASA (Autentikasi Mandiri)
             auth()->guard('sdosen')->attempt(
                 [
                     'email' => $request['email'],
@@ -165,7 +169,7 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            //generate token
+            //LOGIN DOSEN JIKA PAKAI TOKEN
             $authuser = auth()->guard('sdosen')->user();
             $token = $authuser->auth()->first()->createToken('dosen')->accessToken;
 
@@ -201,6 +205,8 @@ class AuthController extends Controller
                     $admin->save();
                 }
             }
+
+            //LOGIN ADMIN LARAVEL BIASA (Autentikasi Mandiri)
             auth()->guard('sadmin')->attempt(
                 [
                     'email' => $request['email'],
@@ -213,7 +219,7 @@ class AuthController extends Controller
                 ], 401);
             }
 
-            //generate token
+            //LOGIN ADMIN JIKA PAKAI TOKEN
             $authuser = auth()->guard('sadmin')->user();
             $token = $authuser->auth()->first()->createToken('admin')->accessToken;
 
@@ -243,52 +249,17 @@ class AuthController extends Controller
     public function logout(Request $request)
     {
         try {
-            //revoke token
-            $request->user()->token()->revoke();
-            auth()->guard('sadmin')->logout();
-            auth()->guard('sdosen')->logout();
-            auth()->guard('smahasiswa')->logout();
+            //hapus token
+            $request->user()->token()->revoke();    //LOGOUT JIKA PAKAI TOKEN
+
+            //hapus autentikasi/session
+            auth()->guard('sadmin')->logout();      //Auth LARAVEL BIASA (Autentikasi Mandiri)
+            auth()->guard('sdosen')->logout();      //Auth LARAVEL BIASA (Autentikasi Mandiri)
+            auth()->guard('smahasiswa')->logout();  //Auth LARAVEL BIASA (Autentikasi Mandiri)
     
             //response
             return response()->json([
                 'message' => 'berhasil logout'
-            ], 200);
-        } catch (\Exception $e) {
-            //response
-            return response()->json([
-                'message' => 'Ada kesalahan',
-                'error' => $e->getMessage()
-            ], 409);
-        }
-    }
-
-    public function verify() {
-        try {
-            Mail::to("fauziardiantama@student.uns.ac.id")->send(new baseMail(
-                [
-                    "view" => "emails.akun",
-                    "from" => [
-                        "address" => env('MAIL_FROM_ADDRESS'),
-                        "name" => "Notifikasi D3TI"
-                    ],
-                    "tags" => [ "verifikasi", "akun", "d3ti","kuliah","notifikasi" ],
-                    "subject" => "Verifikasi Akun",
-                    "content" => [
-                        "nama_user" => "Fauzi Ardiantama",
-                        "judul" => "Verifikasi Akun",
-                        "pesan" => "Buka link berikut untuk verifikasi akun anda, abaikan pesan ini jika anda tidak merasa melakukan pendaftaran akun.",
-                        "tautan" => config('app.url').'/verifikasi-email?email=fauziardiantama@student.uns.ac.id&token=123',
-                        "useakun" => true,
-                        "akun" => [
-                            "email" => "testinf",
-                            "password" => "testinf"
-                        ]
-                    ],
-                    "attachments" => []
-                ]
-            ));
-            return response()->json([
-                'message' => 'berhasil'
             ], 200);
         } catch (\Exception $e) {
             //response

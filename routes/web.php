@@ -34,9 +34,18 @@ Route::prefix('/mahasiswa')->group(function () {
         Route::get('/surat-serah-terima/{token}/{file}', [DokumenController::class, 'showSuratSerahTerima']);
         Route::get('/surat-serah-terima-2024/{file}', [DokumenController::class, 'showSuratSerahTerimaNew']);
         Route::get('/surat-jawaban/{token}/{file}', [DokumenController::class, 'showSuratJawaban']);
+        Route::prefix('/seminar')->group(function () {
+            Route::get('/daftar-hadir/{file}', [DokumenController::class, 'showDaftarHadirSeminar']);
+            Route::get('/draft-kmm/{file}', [DokumenController::class, 'showDraftKMM']);
+            Route::get('/foto/{file}', [DokumenController::class, 'showFotoSeminar']);
+            Route::get('/krs/{file}', [DokumenController::class, 'showKRSI']);
+            Route::get('/lembar-revisi/{file}', [DokumenController::class, 'showLembarRevisi']);
+            Route::get('/selesai-kmm/{file}', [DokumenController::class, 'showSelesaiKMM']);
+        });
     });
 });
 Route::get('/verifikasi-email', [AuthController::class, 'verifyEmail']);
+
 Route::get('/{any}', function () {
     return view('app');
 })->where('any', '.*');

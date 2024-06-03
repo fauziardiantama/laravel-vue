@@ -9,13 +9,25 @@ export default [
     component: 'CNavItem',
     name: 'Mahasiswa',
     to: { name: 'AdminTaMahasiswa' },
-    icon: 'cil-settings',
+    icon: 'cil-people',
   },
   {
-    component: 'CNavItem',
+    component: 'CNavGroup',
     name: 'Proposal TA',
     to: { name: 'AdminTaProposal' },
-    icon: 'cil-settings',
+    icon: 'cil-puzzle',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'Daftar Proposal',
+        to: { name: 'AdminTaProposal' }
+      },
+      {
+        component: 'CNavItem',
+        name: 'Jadwal Proposal',
+        to: { name: 'AdminTaJadwalProposal' }
+      }
+    ],
   },
   {
     component: 'CNavItem',
@@ -24,28 +36,27 @@ export default [
     icon: 'cil-people'
   },
   {
-    component: 'CNavItem',
-    name: 'Jadwal Proposal',
-    to: { name: 'AdminTaJadwalProposal' },
-    icon: 'cil-settings',
-  },
-  {
-    component: 'CNavItem',
-    name: 'Ruangan',
+    component: 'CNavGroup',
+    name: 'Umum',
     to: { name: 'AdminTaRuangan' },
     icon: 'cil-settings',
-  },
-  {
-    component: 'CNavItem',
-    name: 'Sesi',
-    to: { name: 'AdminTaSesi' },
-    icon: 'cil-settings',
-  },
-  {
-    component: 'CNavItem',
-    name: 'Tahun Akademik',
-    to: { name: 'AdminTaTahunAkademik' },
-    icon: 'cil-settings',
+    items: [
+      {
+        component: 'CNavItem',
+        name: 'Ruangan',
+        to: { name: 'AdminTaRuangan' }
+      },
+      {
+        component: 'CNavItem',
+        name: 'Sesi',
+        to: { name: 'AdminTaSesi' }
+      },
+      {
+        component: 'CNavItem',
+        name: 'Tahun Akademik',
+        to: { name: 'AdminTaTahunAkademik' }
+      }
+    ],
   }
   // {
   //   component: 'CNavItem',

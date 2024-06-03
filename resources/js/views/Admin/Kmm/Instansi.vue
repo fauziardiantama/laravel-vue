@@ -69,6 +69,7 @@
           <CCardBody>
               <table-lite
                   class="table-lite"
+                  :pageOptions="[ { value: 10, text: 10 }, { value: 25, text: 25 }, { value: 50, text: 50 }, { value: 100, text: 100 } ]"
                   :is-slot-mode="true"
                   :is-re-search="instansi.research"
                   :is-loading="instansi.isLoading"

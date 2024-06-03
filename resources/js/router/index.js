@@ -192,6 +192,26 @@ const routes = [
                           dashboard: 'MahasiswaKmmDashboard'
                         },
                         component: () => import('@/views/Mahasiswa/Kmm/Bimbingan.vue'),
+                    },
+                    {
+                        path: 'seminar',
+                        name: 'MahasiswaKmmSeminar',
+                        meta: {
+                          title: 'Seminar',
+                          actived: true,
+                          dashboard: 'MahasiswaKmmDashboard'
+                        },
+                        component: () => import('@/views/Mahasiswa/Kmm/Seminar.vue'),
+                    },
+                    {
+                        path: 'nilai',
+                        name: 'MahasiswaKmmNilai',
+                        meta: {
+                          title: 'Nilai',
+                          actived: true,
+                          dashboard: 'MahasiswaKmmDashboard'
+                        },
+                        component: () => import('@/views/Mahasiswa/Kmm/Nilai.vue'),
                     }
                 ]
             }
@@ -287,6 +307,38 @@ const routes = [
                           title: 'Topik'
                         },
                         component: () => import('@/views/Dosen/Kmm/Topik.vue')
+                    },
+                    {
+                      path: 'seminar',
+                      name: 'DosenKmmSeminar',
+                      meta: {
+                        title: 'Seminar'
+                      },
+                      component: () => import('@/views/Dosen/Kmm/Seminar.vue')
+                    },
+                    {
+                      path: 'penguji',
+                      name: 'DosenKmmPenguji',
+                      meta: {
+                        title: 'Penguji'
+                      },
+                      component: () => import('@/views/Dosen/Kmm/Penguji.vue')
+                    },
+                    {
+                      path: 'nilai-bimbingan',
+                      name: 'DosenKmmNilaiBimbingan',
+                      meta: {
+                        title: 'Nilai Bimbingan'
+                      },
+                      component: () => import('@/views/Dosen/Kmm/NilaiBimbingan.vue')
+                    },
+                    {
+                      path: 'nilai-seminar',
+                      name: 'DosenKmmNilaiSeminar',
+                      meta: {
+                        title: 'Nilai Seminar'
+                      },
+                      component: () => import('@/views/Dosen/Kmm/NilaiSeminar.vue')
                     }
                 ]
             }
@@ -472,12 +524,44 @@ const routes = [
                       component: () => import('@/views/Admin/Kmm/Magang.vue'),
                     },
                     {
+                      path: 'seminar',
+                      name: 'AdminKmmSeminar',
+                      meta: {
+                        title: 'Seminar'
+                      },
+                      component: () => import('@/views/Admin/Kmm/Seminar.vue'),
+                    },
+                    {
+                      path: 'ruangan',
+                      name: 'AdminKmmRuangan',
+                      meta: {
+                        title: 'Ruangan'
+                      },
+                      component: () => import('@/views/Admin/Kmm/Ruangan.vue'),
+                    },
+                    {
                       path: 'informasi',
                       name: 'AdminKmmInformasi',
                       meta: {
                         title: 'Informasi'
                       },
                       component: () => import('@/views/Admin/Kmm/Informasi.vue'),
+                    },
+                    {
+                      path: 'bobotnilai',
+                      name: 'AdminKmmBobotNilai',
+                      meta: {
+                        title: 'Bobot Nilai'
+                      },
+                      component: () => import('@/views/Admin/Kmm/BobotNilai.vue'),
+                    },
+                    {
+                      path: 'parameternilai',
+                      name: 'AdminKmmParameterNilai',
+                      meta: {
+                        title: 'Parameter Nilai'
+                      },
+                      component: () => import('@/views/Admin/Kmm/ParameterNilai.vue'),
                     }
                 ]
             }

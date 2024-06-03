@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\bimbinganInstansi;
+use App\Models\BimbinganInstansi;
 use App\Models\Magang;
 use Illuminate\Http\Request;
 
@@ -29,7 +29,7 @@ class BimbinganInstansiController extends Controller
         $sort = request()->sort ?: 'desc';
         $limit = request()->limit ?: 10;
 
-        $query = bimbinganInstansi::query();
+        $query = BimbinganInstansi::query();
         $query->where('id_magang', $magang->id_magang);
         $query->orderBy($order, $sort);
 
@@ -89,7 +89,7 @@ class BimbinganInstansiController extends Controller
         $sort = request()->sort ?: 'desc';
         $limit = request()->limit ?: 10;
 
-        $query = bimbinganInstansi::query();
+        $query = BimbinganInstansi::query();
         $query->where('id_magang', $magang->id_magang);
         $query->orderBy($order, $sort);
 
@@ -115,7 +115,7 @@ class BimbinganInstansiController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $bimbinganInstansi = bimbinganInstansi::where('id_bimbingan_instansi', $id)->first();
+        $bimbinganInstansi = BimbinganInstansi::where('id_bimbingan_instansi', $id)->first();
         //if status is 1 then reject
         if ($bimbinganInstansi->status == 1) {
             return response()->json([
@@ -139,7 +139,7 @@ class BimbinganInstansiController extends Controller
      */
     public function destroy($id)
     {
-        $bimbinganInstansi = bimbinganInstansi::where('id_bimbingan_instansi', $id)->first();
+        $bimbinganInstansi = BimbinganInstansi::where('id_bimbingan_instansi', $id)->first();
 
         //if status is 1 then reject
         if ($bimbinganInstansi->status == 1) {

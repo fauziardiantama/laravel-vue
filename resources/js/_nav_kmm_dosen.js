@@ -16,8 +16,32 @@ export default [
     name: 'Topik',
     to: { name: 'DosenKmmTopik' },
     icon: 'cil-speedometer',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Seminar',
+    to: { name: 'DosenKmmSeminar' },
+    icon: 'cil-settings',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Penguji',
+    to: { name: 'DosenKmmPenguji' },
+    icon: 'cil-settings',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Nilai Bimbingan',
+    to: { name: 'DosenKmmNilaiBimbingan' },
+    icon: 'cil-settings',
+  },
+  {
+    component: 'CNavItem',
+    name: 'Nilai Seminar',
+    to: { name: 'DosenKmmNilaiSeminar' },
+    icon: 'cil-settings',
   }
-
+  
   // {
   //   component: 'CNavItem',
   //   name: 'Download CoreUI',

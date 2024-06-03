@@ -26,6 +26,20 @@ export default [
     to: { name: 'MahasiswaKmmBimbingan' },
     icon: 'cil-pencil',
     needactivation: true
+  },
+  {
+    component: 'CNavItem',
+    name: 'Seminar',
+    to: { name: 'MahasiswaKmmSeminar' },
+    icon: 'cil-pencil',
+    needactivation: true
+  },
+  {
+    component: 'CNavItem',
+    name: 'Nilai',
+    to: { name: 'MahasiswaKmmNilai' },
+    icon: 'cil-pencil',
+    needactivation: true
   }
   // {
   //   component: 'CNavItem',

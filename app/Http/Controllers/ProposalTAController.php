@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\ProposalTA;
 use App\Models\Mahasiswa;
+use App\Models\PembimbingTa;
 use App\Events\Prop;
 use Illuminate\Http\Request;
 use App\Http\Requests\StoreProposalTA;
@@ -136,6 +137,16 @@ class ProposalTAController extends Controller
         $proposal->token = bin2hex(random_bytes(32));
         $proposal->token_expired = now()->addHours(2);
         if ($proposal->save()) {
+            $user = $request->user()->mahasiswa()->first();
+            //check if user have magang with id_dosen is not null
+            $magang = $user->magang()->whereNotNull('id_dosen')->where('status_dosen', '=', 1)->first();
+            if ($magang) {
+                $proposal = $user->proposalTa()->first();
+                $pembimbingTa = new PembimbingTa();
+                $pembimbingTa->proposal_ta_id = $proposal->id;
+                $pembimbingTa->id_magang = $magang->id_magang;
+                $pembimbingTa->save();
+            }
             $proposal = ProposalTA::where('nim', $nim)->with('mahasiswa','semester','jadwalPropTa')->first();
             event( new Prop("store", ["Admin","User.".$nim], false, $proposal));
             // send #EVENT ProposalUpdated to Mahasiswa.nim dan Admin

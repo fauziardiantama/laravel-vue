@@ -36,7 +36,9 @@ class MagangController extends Controller
                 'dosen',
                 'progres',
                 'rencanaMagang',
-                'proposalTa'
+                'proposalTa',
+                'bimbinganInstansi',
+                'bimbinganDosen'
             ])->first();
             if (!$magang) {
                 return response()->json([

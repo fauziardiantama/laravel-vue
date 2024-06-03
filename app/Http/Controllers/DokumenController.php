@@ -178,4 +178,34 @@ class DokumenController extends Controller
             ], 404);
         }
     }
+
+    public function showDaftarHadirSeminar($file) {
+        $path = storage_path('app/public/seminar/daftar_hadir/' . $file);
+        return response()->file($path);
+    }
+
+    public function showDraftKMM($file) {
+        $path = storage_path('app/public/seminar/draft_kmm/' . $file);
+        return response()->file($path);
+    }
+
+    public function showFotoSeminar($file) {
+        $path = storage_path('app/public/seminar/foto/' . $file);
+        return response()->file($path);
+    }
+
+    public function showKRSI($file) {
+        $path = storage_path('app/public/seminar/krs/' . $file);
+        return response()->file($path);
+    }
+
+    public function showLembarRevisi($file) {
+        $path = storage_path('app/public/seminar/lembar_revisi/' . $file);
+        return response()->file($path);
+    }
+
+    public function showSelesaiKMM($file) {
+        $path = storage_path('app/public/seminar/selesai_kmm/' . $file);
+        return response()->file($path);
+    }
 }

@@ -628,13 +628,13 @@ class SuratMagangController extends Controller
         $content = str_replace("data_nim", strtoupper($data["mahasiswa"]["nim"]), $content);
         $content = str_replace("data_nama_topik", $data["topik"]["nama_topik"], $content);
         $content = str_replace("data_nama_instansi", $data["instansi"]["nama"], $content);
-        $content = str_replace("data_nama_kaprodi", "HARTATIK., S.Si., M.Si.", $content);
-        $content = str_replace("data_nik_kaprodi", "1978050320130201", $content);
+        $content = str_replace("data_nama_kaprodi", "Eko Harry Pratisto, S.T., M.Info.Tech., Ph.D.", $content);
+        $content = str_replace("data_nik_kaprodi", "1981112420130201", $content);
         $content = str_replace("data_alamat_instansi", $data["instansi"]["alamat"], $content);
         $content = str_replace("data_alamat", $data["instansi"]["alamat"], $content);
 
         $rencana_content = "";
-        $template_rencana = "1\\cell Minggu ke-1\\cell data_rencana1\\par \\cell }\\pard \\ltrpar\\ql \\li0\\ri0\\sa200\\sl276\\slmult1\\widctlpar\\intbl\\wrapdefault\\aspalpha\\aspnum\\faauto\\adjustright\\rin0\\lin0 {\\rtlch\\fcs1 \\af0\\afs20 \\ltrch\\fcs0 \\fs20\\insrsid4720666 \\trowd \\irow1\\irowband1\\lastrow\\ltrrow\\ts11\\trgaph108\\trleft0\\trbrdrt\\brdrs\\brdrw10 \\trbrdrl\\brdrs\\brdrw10 \\trbrdrb\\brdrs\\brdrw10 \\trbrdrr\\brdrs\\brdrw10 \\trbrdrh\\brdrs\\brdrw10";
+        $template_rencana = "data_tabel";
 
         //use for loop with rencanaMagang's length
         for ($i=0; $i < count($data["rencana_magang"]); $i++) { 

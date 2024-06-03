@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\bimbinganDosen;
+use App\Models\BimbinganDosen;
 use App\Models\Magang;
 use App\Models\Mahasiswa;
 use App\Models\ProposalTA;
@@ -32,7 +32,7 @@ class BimbinganDosenController extends Controller
         $sort = request()->sort ?: 'desc';
         $limit = request()->limit ?: 10;
 
-        $query = bimbinganDosen::query();
+        $query = BimbinganDosen::query();
         $query->where('id_magang', $magang->id_magang);
         $query->orderBy($order, $sort);
 
@@ -156,7 +156,7 @@ class BimbinganDosenController extends Controller
         $sort = request()->sort ?: 'desc';
         $limit = request()->limit ?: 10;
 
-        $query = bimbinganDosen::query();
+        $query = BimbinganDosen::query();
         $query->where('id_magang', $magang->id_magang);
         $query->orderBy($order, $sort);
 
@@ -182,7 +182,7 @@ class BimbinganDosenController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $bimbinganDosen = bimbinganDosen::where('id_bimbingan_dosen', $id)->first();
+        $bimbinganDosen = BimbinganDosen::where('id_bimbingan_dosen', $id)->first();
         //if status is 1 then reject
         if ($bimbinganDosen->status == 1) {
             return response()->json([
@@ -206,7 +206,7 @@ class BimbinganDosenController extends Controller
      */
     public function destroy($id)
     {
-        $bimbinganDosen = bimbinganDosen::where('id_bimbingan_dosen', $id)->first();
+        $bimbinganDosen = BimbinganDosen::where('id_bimbingan_dosen', $id)->first();
 
         //if status is 1 then reject
         if ($bimbinganDosen->status == 1) {

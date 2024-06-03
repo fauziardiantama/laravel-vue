@@ -29,6 +29,13 @@ use App\Http\Controllers\InformasiController;
 use App\Http\Controllers\PembimbingTaController;
 use App\Http\Controllers\BimbinganInstansiController;
 use App\Http\Controllers\BimbinganDosenController;
+use App\Http\Controllers\SeminarController;
+use App\Http\Controllers\ParameterNilaiBimbinganController;
+use App\Http\Controllers\ParameterNilaiInstansiController;
+use App\Http\Controllers\ParameterNilaiSeminarController;
+use App\Http\Controllers\BobotNilaiController;
+use App\Http\Controllers\NilaiBimbinganController;
+use App\Http\Controllers\NilaiSeminarController;
 
 /*
 |--------------------------------------------------------------------------
@@ -353,6 +360,73 @@ Route::prefix('/kmm')->group(function () {
             Route::post('/', [FakultasController::class, 'store']);
             Route::put('/{id}', [FakultasController::class, 'update']);
             Route::delete('/{id}', [FakultasController::class, 'destroy']);
+        });
+    });
+    Route::prefix('/seminar')->group(function () {
+        Route::middleware(['auth:passport','role:mahasiswa,admin,dosen'])->group(function () {
+            Route::get('/', [SeminarController::class, 'index']);
+        });
+        Route::middleware(['auth:passport','role:dosen'])->group(function () {
+            Route::get('/penguji', [SeminarController::class, 'listUji']);
+        });
+        Route::middleware(['auth:passport','role:mahasiswa'])->group(function () {
+            Route::post('/', [SeminarController::class, 'store']);
+            Route::post('/update', [SeminarController::class, 'update']);
+            Route::delete('/', [SeminarController::class, 'destroy']);
+        });
+        Route::middleware(['auth:passport','role:admin,dosen'])->group(function () {
+            Route::get('/{id}', [SeminarController::class, 'show']);
+            Route::put('/{id}/tgl_seminar', [SeminarController::class, 'tglSeminar']);
+            Route::put('/{id}/approve', [SeminarController::class, 'approve']);
+            Route::put('/{id}/reject', [SeminarController::class, 'reject']);
+            Route::put('/{id}/ruangan', [SeminarController::class, 'ruangan']);
+            Route::put('/{id}/penguji', [SeminarController::class, 'penguji']);
+            Route::put('/{id}/penguji/remove', [SeminarController::class, 'removePenguji']);
+        });
+    });
+    Route::prefix('/nilai')->group(function () {
+        Route::prefix('/parameter')->group(function () {
+            Route::middleware(['auth:passport','role:admin,dosen,mahasiswa'])->get('/bimbingan/year/{tahun}', [ParameterNilaiBimbinganController::class, 'year']);
+            Route::middleware(['auth:passport','role:admin,dosen,mahasiswa'])->get('/seminar/year/{tahun}', [ParameterNilaiSeminarController::class, 'year']);
+            Route::middleware(['auth:passport','role:admin'])->group(function () {
+                Route::prefix('/bimbingan')->group(function () {
+                    Route::get('/', [ParameterNilaiBimbinganController::class, 'index']);
+                    Route::post('/', [ParameterNilaiBimbinganController::class, 'store']);
+                    Route::put('/{id}', [ParameterNilaiBimbinganController::class, 'update']);
+                    Route::delete('/{id}', [ParameterNilaiBimbinganController::class, 'destroy']);
+                });
+                Route::prefix('/instansi')->group(function () {
+                    Route::get('/', [ParameterNilaiInstansiController::class, 'index']);
+                    Route::post('/', [ParameterNilaiInstansiController::class, 'store']);
+                    Route::put('/{id}', [ParameterNilaiInstansiController::class, 'update']);
+                    Route::delete('/{id}', [ParameterNilaiInstansiController::class, 'destroy']);
+                });
+                Route::prefix('/seminar')->group(function () {
+                    Route::get('/', [ParameterNilaiSeminarController::class, 'index']);
+                    Route::post('/', [ParameterNilaiSeminarController::class, 'store']);
+                    Route::put('/{id}', [ParameterNilaiSeminarController::class, 'update']);
+                    Route::delete('/{id}', [ParameterNilaiSeminarController::class, 'destroy']);
+                });
+            });
+        });
+        Route::middleware(['auth:passport','role:mahasiswa,dosen,admin'])->group(function () {
+            Route::get('/bimbingan', [NilaiBimbinganController::class, 'index']);
+            Route::get('/seminar', [NilaiSeminarController::class, 'index']);
+        });
+        Route::middleware(['auth:passport','role:dosen'])->group(function () {  
+            Route::get('/bimbingan/{id_magang}', [NilaiBimbinganController::class, 'magang']);
+            Route::post('/bimbingan', [NilaiBimbinganController::class, 'store']);
+            Route::get('/seminar/{id_magang}', [NilaiSeminarController::class, 'magang']);
+            Route::post('/seminar', [NilaiSeminarController::class, 'store']);
+            Route::delete('/seminar/change/{id_nilai_seminar}', [NilaiSeminarController::class, 'destroy']);
+        });
+        Route::prefix('/bobot')->group(function () {
+            Route::middleware(['auth:passport','role:admin'])->group(function () {
+                Route::get('/', [BobotNilaiController::class, 'index']);
+                Route::post('/', [BobotNilaiController::class, 'store']);
+                Route::put('/{id}', [BobotNilaiController::class, 'update']);
+                Route::delete('/{id}', [BobotNilaiController::class, 'destroy']);
+            });
         });
     });
     //resource of kmm

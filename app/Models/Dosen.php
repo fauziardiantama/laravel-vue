@@ -62,4 +62,14 @@ class Dosen extends Authenticatable
     {
         return $this->belongsToMany(JadwalPropTA::class, 'jadwal_proposal_ta_dosen', 'dosen_id', 'jadwal_proposal_ta_id');
     }
+
+    public function jadwalSeminar()
+    {
+        return $this->belongsToMany(PengujiSeminar::class, 'penguji_seminar', 'id_dosen', 'id_seminar');
+    }
+
+    public function nilaiSeminar()
+    {
+        return $this->hasMany(NilaiSeminar::class, 'id_dosen', 'id_dosen');
+    }
 }
